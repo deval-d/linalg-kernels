@@ -3,6 +3,10 @@
 use std::ops::Sub;
 use lak::traits::{Abs, Max, TestFloat}; 
 
+/// how many times each routine is tested 
+/// using a seeded random number generator
+pub const ITERATIONS: u64 = 4; 
+
 pub fn assert_close<T>( 
     a: &[T], 
     b: &[T], 

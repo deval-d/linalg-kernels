@@ -1,17 +1,17 @@
-use super::common::assert_close;  
+use super::common::{assert_close, ITERATIONS};  
 
 use blas_src as _; 
 use cblas_sys::cblas_dswap; 
 use lak::l1::swap::swap; 
 use lak::types::VecMut; 
-use lak::helpers::make_vec_random; 
+use lak::helpers::{make_vec_random, test_rng}; 
 
-#[test] 
-fn dswap() { 
+fn dswap(case: u64) { 
     let length = 1024; 
 
-    let mut xbuf: Vec<f64> = make_vec_random(length); 
-    let mut ybuf: Vec<f64> = make_vec_random(length); 
+    let mut rng = test_rng(case); 
+    let mut xbuf: Vec<f64> = make_vec_random(length, &mut rng); 
+    let mut ybuf: Vec<f64> = make_vec_random(length, &mut rng); 
 
     let xbuf_orig = xbuf.clone(); 
     let ybuf_orig = ybuf.clone(); 
@@ -40,3 +40,9 @@ fn dswap() {
     assert_close(&xbuf_blas, &ybuf_orig); 
 }
 
+#[test] 
+fn main() { 
+    for case in 0..ITERATIONS { 
+        dswap(case); 
+    }
+}
