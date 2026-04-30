@@ -1,5 +1,5 @@
 mod common;
-use common::{SIZES, bytes_read_f32};
+use common::{SIZES, bytes_read_f32, bench_rng};
 
 use blas_src as _;
 use cblas_sys::{
@@ -31,12 +31,11 @@ fn main() {
     divan::main();
 }
 
-
 // asum \\  
 
 #[divan::bench(args = SIZES)]
 pub fn lak_sasum(bencher: Bencher, n: usize) { 
-    let xbuf: Vec<f32> = make_vec_random(n); 
+    let xbuf: Vec<f32> = make_vec_random(n, &mut bench_rng(0)); 
     let x = VecRef::new(&xbuf); 
 
     bencher
@@ -46,7 +45,7 @@ pub fn lak_sasum(bencher: Bencher, n: usize) {
 
 #[divan::bench(args = SIZES)]
 fn blas_sasum(bencher: Bencher, n: usize) {
-    let xbuf = make_vec_random(n);
+    let xbuf = make_vec_random(n, &mut bench_rng(0));
 
     bencher
         .counter(BytesCount::new(bytes_read_f32(1, n) as u64))
@@ -66,8 +65,8 @@ fn blas_sasum(bencher: Bencher, n: usize) {
 
 #[divan::bench(args = SIZES)]
 pub fn lak_saxpy(bencher: Bencher, n: usize) {
-    let xbuf: Vec<f32> = make_vec_random(n);
-    let mut ybuf: Vec<f32> = make_vec_random(n);
+    let xbuf: Vec<f32> = make_vec_random(n, &mut bench_rng(1));
+    let mut ybuf: Vec<f32> = make_vec_random(n, &mut bench_rng(2));
 
     let x = VecRef::new(&xbuf);
 
@@ -81,8 +80,8 @@ pub fn lak_saxpy(bencher: Bencher, n: usize) {
 
 #[divan::bench(args = SIZES)]
 fn blas_saxpy(bencher: Bencher, n: usize) {
-    let xbuf: Vec<f32> = make_vec_random(n);
-    let mut ybuf: Vec<f32> = make_vec_random(n);
+    let xbuf: Vec<f32> = make_vec_random(n, &mut bench_rng(1));
+    let mut ybuf: Vec<f32> = make_vec_random(n, &mut bench_rng(2));
 
     bencher
         .counter(BytesCount::new(bytes_read_f32(3, n) as u64))
@@ -105,8 +104,8 @@ fn blas_saxpy(bencher: Bencher, n: usize) {
 
 #[divan::bench(args = SIZES)]
 pub fn lak_scopy(bencher: Bencher, n: usize) {
-    let xbuf: Vec<f32> = make_vec_random(n);
-    let mut ybuf: Vec<f32> = make_vec_random(n);
+    let xbuf: Vec<f32> = make_vec_random(n, &mut bench_rng(3));
+    let mut ybuf: Vec<f32> = make_vec_random(n, &mut bench_rng(4));
 
     let x = VecRef::new(&xbuf);
 
@@ -120,8 +119,8 @@ pub fn lak_scopy(bencher: Bencher, n: usize) {
 
 #[divan::bench(args = SIZES)]
 fn blas_scopy(bencher: Bencher, n: usize) {
-    let xbuf: Vec<f32> = make_vec_random(n);
-    let mut ybuf: Vec<f32> = make_vec_random(n);
+    let xbuf: Vec<f32> = make_vec_random(n, &mut bench_rng(3));
+    let mut ybuf: Vec<f32> = make_vec_random(n, &mut bench_rng(4));
 
     bencher
         .counter(BytesCount::new(bytes_read_f32(2, n) as u64))
@@ -143,8 +142,8 @@ fn blas_scopy(bencher: Bencher, n: usize) {
 
 #[divan::bench(args = SIZES)]
 pub fn lak_sdot(bencher: Bencher, n: usize) {
-    let xbuf: Vec<f32> = make_vec_random(n);
-    let ybuf: Vec<f32> = make_vec_random(n);
+    let xbuf: Vec<f32> = make_vec_random(n, &mut bench_rng(5));
+    let ybuf: Vec<f32> = make_vec_random(n, &mut bench_rng(6));
 
     let x = VecRef::new(&xbuf);
     let y = VecRef::new(&ybuf);
@@ -158,8 +157,8 @@ pub fn lak_sdot(bencher: Bencher, n: usize) {
 
 #[divan::bench(args = SIZES)]
 fn blas_sdot(bencher: Bencher, n: usize) {
-    let xbuf: Vec<f32> = make_vec_random(n);
-    let ybuf: Vec<f32> = make_vec_random(n);
+    let xbuf: Vec<f32> = make_vec_random(n, &mut bench_rng(5));
+    let ybuf: Vec<f32> = make_vec_random(n, &mut bench_rng(6));
 
     bencher
         .counter(BytesCount::new(bytes_read_f32(2, n) as u64))
@@ -181,7 +180,7 @@ fn blas_sdot(bencher: Bencher, n: usize) {
 
 #[divan::bench(args = SIZES)]
 pub fn lak_isamax(bencher: Bencher, n: usize) {
-    let xbuf: Vec<f32> = make_vec_random(n);
+    let xbuf: Vec<f32> = make_vec_random(n, &mut bench_rng(7));
     let x = VecRef::new(&xbuf);
 
     bencher
@@ -193,7 +192,7 @@ pub fn lak_isamax(bencher: Bencher, n: usize) {
 
 #[divan::bench(args = SIZES)]
 fn blas_isamax(bencher: Bencher, n: usize) {
-    let xbuf: Vec<f32> = make_vec_random(n);
+    let xbuf: Vec<f32> = make_vec_random(n, &mut bench_rng(7));
 
     bencher
         .counter(BytesCount::new(bytes_read_f32(1, n) as u64))
@@ -213,7 +212,7 @@ fn blas_isamax(bencher: Bencher, n: usize) {
 
 #[divan::bench(args = SIZES)]
 pub fn lak_snrm2(bencher: Bencher, n: usize) {
-    let xbuf: Vec<f32> = make_vec_random(n);
+    let xbuf: Vec<f32> = make_vec_random(n, &mut bench_rng(8));
     let x = VecRef::new(&xbuf);
 
     bencher
@@ -225,7 +224,7 @@ pub fn lak_snrm2(bencher: Bencher, n: usize) {
 
 #[divan::bench(args = SIZES)]
 fn blas_snrm2(bencher: Bencher, n: usize) {
-    let xbuf: Vec<f32> = make_vec_random(n);
+    let xbuf: Vec<f32> = make_vec_random(n, &mut bench_rng(8));
 
     bencher
         .counter(BytesCount::new(bytes_read_f32(1, n) as u64))
@@ -245,7 +244,7 @@ fn blas_snrm2(bencher: Bencher, n: usize) {
 
 #[divan::bench(args = SIZES)]
 pub fn lak_sscal(bencher: Bencher, n: usize) {
-    let mut xbuf: Vec<f32> = make_vec_random(n);
+    let mut xbuf: Vec<f32> = make_vec_random(n, &mut bench_rng(9));
 
     bencher
         .counter(BytesCount::new(bytes_read_f32(2, n) as u64))
@@ -257,7 +256,7 @@ pub fn lak_sscal(bencher: Bencher, n: usize) {
 
 #[divan::bench(args = SIZES)]
 fn blas_sscal(bencher: Bencher, n: usize) {
-    let mut xbuf: Vec<f32> = make_vec_random(n);
+    let mut xbuf: Vec<f32> = make_vec_random(n, &mut bench_rng(9));
 
     bencher
         .counter(BytesCount::new(bytes_read_f32(2, n) as u64))
@@ -278,8 +277,8 @@ fn blas_sscal(bencher: Bencher, n: usize) {
 
 #[divan::bench(args = SIZES)]
 pub fn lak_sswap(bencher: Bencher, n: usize) {
-    let mut xbuf: Vec<f32> = make_vec_random(n);
-    let mut ybuf: Vec<f32> = make_vec_random(n);
+    let mut xbuf: Vec<f32> = make_vec_random(n, &mut bench_rng(10));
+    let mut ybuf: Vec<f32> = make_vec_random(n, &mut bench_rng(11));
 
     bencher
         .counter(BytesCount::new(bytes_read_f32(4, n) as u64))
@@ -293,8 +292,8 @@ pub fn lak_sswap(bencher: Bencher, n: usize) {
 
 #[divan::bench(args = SIZES)]
 fn blas_sswap(bencher: Bencher, n: usize) {
-    let mut xbuf: Vec<f32> = make_vec_random(n);
-    let mut ybuf: Vec<f32> = make_vec_random(n);
+    let mut xbuf: Vec<f32> = make_vec_random(n, &mut bench_rng(10));
+    let mut ybuf: Vec<f32> = make_vec_random(n, &mut bench_rng(11));
 
     bencher
         .counter(BytesCount::new(bytes_read_f32(4, n) as u64))
