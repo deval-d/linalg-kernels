@@ -1,28 +1,34 @@
 // helpers.rs 
 
-use rand::thread_rng; 
 use rand::distributions::{Distribution, Standard}; 
+use rand::rngs::StdRng; 
+use rand::{Rng, SeedableRng}; 
 
-/// makes a [Vec<T>] of given length with randomized entries 
-#[allow(dead_code)]
-pub fn make_vec_random<T>(
-    length: usize
-) -> Vec<T>
-where
-    T: Default
-        + Copy, 
+pub const TEST_SEED: u64 = 676767; 
 
-    Standard: Distribution<T>, 
+#[allow(dead_code)] 
+pub fn test_rng(case: u64) -> StdRng { 
+    StdRng::seed_from_u64(TEST_SEED + case)
+}
+
+#[allow(dead_code)] 
+pub fn make_vec_random<T, R>( 
+    length: usize,
+    rng: &mut R, 
+) -> Vec<T> 
+where 
+    T: Default + Copy, 
+    R: Rng, 
+    Standard: Distribution<T>,
 { 
-    assert!(length != 0, "len must be nonzero");
+    assert!(length != 0, "length must be nonzero"); 
 
     let mut buffer = vec![T::default(); length]; 
-
-    let mut rng = thread_rng(); 
     let distribution = Standard; 
+
     for value in buffer.iter_mut() { 
-        *value = distribution.sample(&mut rng);  
+        *value = distribution.sample(rng); 
     }
 
     buffer
-} 
+}
