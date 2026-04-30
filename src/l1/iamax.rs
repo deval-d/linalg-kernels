@@ -7,7 +7,7 @@ use std::simd::cmp::{SimdPartialEq, SimdPartialOrd};
 use crate::types::VecRef; 
 use crate::traits::Abs;
 
-const LANES: usize = 32; 
+const LANES: usize = 16; 
 
 /// returns [usize] index for largest absolute value element in x 
 ///
@@ -33,18 +33,19 @@ where
     let x_slice = x.as_slice(); 
     let (x_chunks, x_tail) = x_slice.as_chunks::<LANES>(); 
 
+    let mut max = T::default(); 
     let mut max_idx = 0; 
-    let mut max_val = T::default(); 
 
     for (idx, &x_chunk) in x_chunks.iter().enumerate() { 
         let x_vec = Simd::from_array(x_chunk).abs();
-        let mask  = x_vec.simd_gt(Simd::splat(max_val)); 
+        let x_vec_max = x_vec.reduce_max(); 
 
-        if mask.any() { 
+        if x_vec_max > max { 
             for lane in 0..LANES { 
                 let x_val = x_vec[lane]; 
-                if x_val > max_val { 
-                    max_val = x_val; 
+
+                if x_val > max { 
+                    max = x_val; 
                     max_idx = idx * LANES + lane 
                 }
             }
@@ -54,8 +55,8 @@ where
     let simd_len = x_chunks.len() * LANES; 
     for (idx, &xv) in x_tail.iter().enumerate() { 
         let x_val = xv.abs(); 
-        if x_val > max_val { 
-            max_val = x_val; 
+        if x_val > max { 
+            max = x_val; 
             max_idx = simd_len + idx;
         }
     }
