@@ -1,6 +1,7 @@
 // types.rs 
 
-/// immutable vector type
+/// immutable vector type 
+#[derive(Clone, Copy)]
 pub struct VecRef<'a, T> { 
     buffer: &'a [T], 
 }

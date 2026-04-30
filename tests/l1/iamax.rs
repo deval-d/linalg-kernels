@@ -1,15 +1,14 @@
-use super::common::make_vec;  
-
 use blas_src as _; 
 use cblas_sys::cblas_idamax; 
 use lak::l1::iamax::iamax; 
 use lak::types::VecRef; 
+use lak::helpers::make_vec_random;
 
 #[test] 
 fn idamax() { 
     let length = 1024; 
 
-    let xbuf: Vec<f64> = make_vec(length); 
+    let xbuf: Vec<f64> = make_vec_random(length); 
 
     let xbuf_blas = xbuf.clone(); 
 

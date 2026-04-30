@@ -1,15 +1,17 @@
-use super::common::{make_vec, assert_close};  
+use super::common::assert_close;  
+
 
 use blas_src as _; 
 use cblas_sys::cblas_dasum; 
 use lak::l1::asum::asum; 
 use lak::types::VecRef; 
+use lak::helpers::make_vec_random; 
 
 #[test] 
 fn dasum() { 
     let length = 1024; 
 
-    let xbuf: Vec<f64> = make_vec(length); 
+    let xbuf: Vec<f64> = make_vec_random(length); 
 
     let xbuf_blas = xbuf.clone(); 
 

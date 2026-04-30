@@ -1,15 +1,16 @@
-use super::common::{make_vec, assert_close};  
+use super::common::assert_close;  
 
 use blas_src as _; 
 use cblas_sys::cblas_dnrm2; 
 use lak::l1::nrm2::nrm2; 
 use lak::types::VecRef; 
+use lak::helpers::make_vec_random; 
 
 #[test] 
 fn dnrm2() { 
     let length = 1024; 
 
-    let xbuf: Vec<f64> = make_vec(length); 
+    let xbuf: Vec<f64> = make_vec_random(length); 
 
     let xbuf_blas = xbuf.clone(); 
 

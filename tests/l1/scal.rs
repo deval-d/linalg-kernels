@@ -1,16 +1,16 @@
-use super::common::{make_vec, assert_close};  
-
+use super::common::assert_close;  
 use blas_src as _; 
 use cblas_sys::cblas_dscal; 
 use lak::l1::scal::scal; 
 use lak::types::VecMut; 
+use lak::helpers::make_vec_random; 
 
 #[test] 
 fn dscal() { 
     let length = 1024; 
     let alpha = 3.1415926; 
 
-    let mut xbuf: Vec<f64> = make_vec(length); 
+    let mut xbuf: Vec<f64> = make_vec_random(length); 
 
     let mut xbuf_blas = xbuf.clone(); 
 

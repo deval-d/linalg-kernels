@@ -57,6 +57,8 @@ impl Max for f64 {
     }
 }
 
+
+/// used in tests
 pub trait TestFloat:
     Copy
     + PartialOrd
@@ -74,6 +76,21 @@ pub trait TestFloat:
 impl TestFloat for f64 {
     const RTOL: Self = 1e-12;
     const ATOL: Self = 1e-12;
+}
+
+
+
+/// defines SIMD vector width in L1 routines 
+pub trait SimdScalarL1: Copy { 
+    const LANES: usize; 
+}
+
+impl SimdScalarL1 for f32 { 
+    const LANES: usize = 32; 
+}
+
+impl SimdScalarL1 for f64 { 
+    const LANES: usize = 16; 
 }
 
 

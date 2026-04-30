@@ -1,16 +1,18 @@
-use super::common::{make_vec, assert_close};  
+use super::common::assert_close;  
 
 use blas_src as _; 
 use cblas_sys::cblas_ddot; 
 use lak::l1::dot::dot; 
 use lak::types::VecRef; 
+use lak::helpers::make_vec_random;
+
 
 #[test] 
 fn ddot() { 
     let length = 1024; 
 
-    let xbuf: Vec<f64> = make_vec(length); 
-    let ybuf: Vec<f64> = make_vec(length); 
+    let xbuf: Vec<f64> = make_vec_random(length); 
+    let ybuf: Vec<f64> = make_vec_random(length); 
 
     let xbuf_blas = xbuf.clone(); 
     let ybuf_blas = ybuf.clone(); 

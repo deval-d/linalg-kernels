@@ -1,16 +1,17 @@
-use super::common::{make_vec, assert_close};  
+use super::common::assert_close;  
 
 use blas_src as _; 
 use cblas_sys::cblas_dswap; 
 use lak::l1::swap::swap; 
 use lak::types::VecMut; 
+use lak::helpers::make_vec_random; 
 
 #[test] 
 fn dswap() { 
     let length = 1024; 
 
-    let mut xbuf: Vec<f64> = make_vec(length); 
-    let mut ybuf: Vec<f64> = make_vec(length); 
+    let mut xbuf: Vec<f64> = make_vec_random(length); 
+    let mut ybuf: Vec<f64> = make_vec_random(length); 
 
     let xbuf_orig = xbuf.clone(); 
     let ybuf_orig = ybuf.clone(); 
