@@ -5,7 +5,7 @@ const BENCH_RNG_CASE: u64 = 0;
 
 #[allow(dead_code)]
 pub const SIZES: &[usize] = &[
-    512, 1024, 1536, 2048,
+    512, 1024, 1536, 2048, 4096, 8192, 16384, 32768, 65536, 
 ];
 
 /// args: 
