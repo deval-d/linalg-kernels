@@ -8,7 +8,7 @@ blas-src = { version = "0.12", optional = true, default-features = false }
 rand = "0.8" 
 
 [dev-dependencies] 
-cblas-sys = "0.1" 
+cblas-sys = { version = "0.1", default-features = false }
 divan = "0.1.21"
 
 [features] 
@@ -17,5 +17,9 @@ openblas   = ["blas-src/openblas"]
 
 [[bench]]
 name = "l1"
+harness = false
+
+[[bench]] 
+name = "l2" 
 harness = false
 
