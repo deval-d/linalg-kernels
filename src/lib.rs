@@ -1,6 +1,5 @@
 #![feature(portable_simd)]
 
-pub mod errors;
 pub mod types; 
 pub mod traits; 
 pub mod helpers;

@@ -1,6 +1,6 @@
 // types.rs 
 
-use crate::errors::MatErr; 
+use std::ops::Range;
 
 /// immutable vector type 
 #[derive(Clone, Copy, Debug)]
@@ -46,12 +46,9 @@ impl<'a, T> VecRef<'a, T> {
         self.buffer
     }
 
-    /// accesses internal immutable slice 
-    /// from idx0 to idx1 exclusive  
-    pub fn specific_slice(&self, idx0: usize, idx1: usize) -> &[T] { 
-        debug_assert!(idx0 < idx1, "idx0 must be less than idx1");
-
-        &self.buffer[idx0..idx1]
+    /// accesses internal immutable slice over a given index range 
+    pub fn slice(&self, range: Range<usize>) -> &[T] { 
+        &self.buffer[range.start..range.end]
     }
 
     /// checks whether internal length is equal to given length parameter
@@ -76,25 +73,19 @@ impl<'a, T> VecMut<'a, T> {
         self.buffer
     }
 
+    /// accesses internal immutable slice over a given index range 
+    pub fn slice(&self, range: Range<usize>) -> &[T] { 
+        &self.buffer[range.start..range.end]
+    }
+
+    /// accesses internal immutable slice over a given index range 
+    pub fn slice_mut(&mut self, range: Range<usize>) -> &mut [T] { 
+        &mut self.buffer[range.start..range.end]
+    }
+
     /// accesses full internal slice as mutable 
     pub fn as_slice_mut(&mut self) -> &mut [T] { 
         self.buffer
-    }
-
-    /// accesses internal slice as immutable 
-    /// from idx0 to idx1 exclusive  
-    pub fn specific_slice(&self, idx0: usize, idx1: usize) -> &[T] { 
-        debug_assert!(idx0 < idx1, "idx0 must be less than idx1");
-
-        &self.buffer[idx0..idx1]
-    }
-
-    /// accesses internal slice as mutable 
-    /// from idx0 to indx1 exclusive
-    pub fn specific_slice_mut(&mut self, idx0: usize, idx1: usize) -> &mut [T] { 
-        debug_assert!(idx0 < idx1, "idx0 must be less than idx1"); 
-
-        &mut self.buffer[idx0..idx1]
     }
 
     /// checks whether internal length is equal to given length parameter
@@ -103,7 +94,9 @@ impl<'a, T> VecMut<'a, T> {
     }
 
     /// used for calling routines over and over again 
-    /// on a mutable vector 
+    /// on the stored internal mutable slice 
+    ///
+    /// borrows self mutably
     pub fn reborrow(&mut self) -> VecMut<'_, T> { 
         VecMut::new(self.as_slice_mut())
     }
@@ -111,7 +104,7 @@ impl<'a, T> VecMut<'a, T> {
 
 
 impl<'a, T> MatRef<'a, T> { 
-    /// constructs [MatRef] with given slice and (i, j) dimension
+    /// constructs [MatRef] with given slice and (n_rows, n_cols) dimension
     pub fn new(buffer: &'a [T], dimension: (usize, usize)) -> Self { 
         let i = dimension.0; 
         let j = dimension.1; 
@@ -134,6 +127,7 @@ impl<'a, T> MatRef<'a, T> {
     }
 
     /// accesses matrix dimension 
+    /// (n_rows, n_cols)
     pub fn dimension(&self) -> (usize, usize) { 
         self.dimension
     }
@@ -148,27 +142,58 @@ impl<'a, T> MatRef<'a, T> {
         self.dimension.1
     }
 
-    /// accesses internal immutable slice 
-    /// from matrix element pos1 to pos2 exclusive 
-    pub fn specific_slice(&self, pos1: (usize, usize), pos2: (usize, usize)) -> &[T] { 
+    /// return a [VecRef] for a given column in Self 
+    pub fn col(&self, j: usize) -> VecRef<'_, T> {
+        let n_rows = self.n_rows(); 
+        let beg_idx = n_rows * j; 
+        let end_idx = n_rows * (j + 1); 
+
+        let slice = &self.buffer[beg_idx..end_idx]; 
+        VecRef::new(slice)
+    }
+
+    /// return a [MatRef] for a contiguous column panel of Self 
+    pub fn col_panel(&self, cols: Range<usize>) -> MatRef<'_, T> { 
         debug_assert!(
-            pos1.0 * pos1.1 <= pos2.0 * pos2.1, 
-            "pos1 must occur before pos2"
+            cols.start < cols.end,
+            "start of col range must be < end of col range"
         );
         debug_assert!(
-            pos1.0 <= self.dimension.0 && pos2.0 <= self.dimension.0,
-            "must be a valid row <= # rows"
-        ); 
-        debug_assert!(
-            pos1.1 <= self.dimension.1 && pos2.1 <= self.dimension.1,
-            "must be a valid col <= # cols"
-        ); 
+            cols.end <= self.dimension.1, 
+            "end of col range must be <= number cols in Self"
+        );
 
+        let n_rows = self.n_rows(); 
+        let n_cols = cols.end - cols.start; 
+        let beg_idx = n_rows * cols.start; 
+        let end_idx = n_rows * cols.end; 
 
-        let beg_idx = pos1.0 + pos1.1 * self.dimension.0; 
-        let end_idx = pos2.0 + pos2.1 * self.dimension.0; 
+        MatRef::new(
+            &self.buffer[beg_idx..end_idx], 
+            (n_rows, n_cols)
+        )     
+    }
 
-        &self.buffer[beg_idx..end_idx]
+    /// return [Iterator] over [MatRef]s containing column panels that 
+    /// span Self. 
+    ///
+    /// each panel holds nc columns, and the last item is the leftover 
+    /// panel with column width < nc 
+    ///
+    /// args: 
+    /// * nc: [usize] - # cols in panel 
+    ///
+    /// returns: 
+    /// * [Iterator] - over ([Range] of column idxs used in panel, [MatRef] of panel itself)
+    pub fn col_panels(&self, nc: usize) -> impl Iterator<Item = (Range<usize>, MatRef<'_, T>)> { 
+        debug_assert!(nc > 0, "nc must be > 0"); 
+
+        let n_cols = self.n_cols(); 
+        (0..n_cols).step_by(nc).map(move |j0| { 
+            let j1 = usize::min(j0 + nc, n_cols); 
+
+            (Range {start: j0, end: j1}, self.col_panel(j0..j1))
+        })
     }
 
     /// checks whether matrix n_cols equals given length
@@ -183,8 +208,8 @@ impl<'a, T> MatRef<'a, T> {
 }
 
 impl<'a, T> MatMut<'a, T> { 
-    /// constructs [MatRef] with given slice and (i, j) dimension
-    pub fn new(buffer: &'a mut [T], dimension: (usize, usize)) -> Result<Self, MatErr> { 
+    /// constructs [MatRef] with given slice and (n_rows, n_cols) dimension
+    pub fn new(buffer: &'a mut [T], dimension: (usize, usize)) -> Self { 
         let i = dimension.0; 
         let j = dimension.1; 
         let buffer_length = buffer.len(); 
@@ -194,10 +219,10 @@ impl<'a, T> MatMut<'a, T> {
             matrix_length,
             buffer_length,
             "matrix has invalid dimensions: buffer length is {buffer_length}, \
-             but dimensions are {i} x {j} = {matrix_length}",
+             but dimensions are {i} x {j} = {matrix_length}"
         );
 
-        Ok(Self { buffer, dimension } )
+        Self { buffer, dimension }
     }
 
     /// accesses full internal immutable slice 
@@ -211,6 +236,7 @@ impl<'a, T> MatMut<'a, T> {
     }
 
     /// accesses matrix dimension 
+    /// (n_rows, n_cols)
     pub fn dimension(&self) -> (usize, usize) { 
         self.dimension
     }
@@ -225,50 +251,92 @@ impl<'a, T> MatMut<'a, T> {
         self.dimension.1
     }
 
-    /// accesses internal slice as immutable
-    /// from matrix element pos1 to pos2 exclusive 
-    pub fn specific_slice(&self, pos1: (usize, usize), pos2: (usize, usize)) -> &[T] { 
-        debug_assert!(
-            pos1.0 * pos1.1 <= pos2.0 * pos2.1,
-            "pos1 must occur before pos2"
-        );
-        debug_assert!(
-            pos1.0 <= self.dimension.0 && pos2.0 <= self.dimension.0,
-            "must be a valid row <= # rows"
-        ); 
-        debug_assert!(
-            pos1.1 <= self.dimension.1 && pos2.1 <= self.dimension.1,
-            "must be a valid col <= # cols"
-        ); 
+    /// return a [VecRef] for a given column in Self 
+    pub fn col(&self, j: usize) -> VecRef<'_, T> { 
+        let n_rows = self.n_rows(); 
+        let beg_idx = n_rows * j; 
+        let end_idx = n_rows * (j + 1); 
 
-
-        let beg_idx = pos1.0 + pos1.1 * self.dimension.0; 
-        let end_idx = pos2.0 + pos2.1 * self.dimension.0; 
-
-        &self.buffer[beg_idx..end_idx]
+        let slice = &self.buffer[beg_idx..end_idx]; 
+        VecRef::new(slice)
     }
 
-    /// accesses internal slice as mutable
-    /// from matrix element pos1 to pos2 exclusive
-    pub fn specific_slice_mut(&mut self, pos1: (usize, usize), pos2: (usize, usize)) -> &mut [T] { 
+    /// return a [VecMut] for a given column in Self 
+    pub fn col_mut(&mut self, j: usize) -> VecMut<'_, T> { 
+        let n_rows = self.n_rows(); 
+        let beg_idx = n_rows * j; 
+        let end_idx = n_rows * (j + 1); 
+
+        let slice = &mut self.buffer[beg_idx..end_idx]; 
+        VecMut::new(slice)
+    }
+
+    /// return a [MatRef] for a contiguous column panel of Self 
+    /// 
+    /// contains full columns over a given a range of column indices. 
+    pub fn col_panel(&self, cols: Range<usize>) -> MatRef<'_, T> { 
         debug_assert!(
-            pos1.0 * pos1.1 <= pos2.0 * pos2.1,
-            "pos1 must occur before pos2"
+            cols.start < cols.end,
+            "start of col range must be < end of col range"
         );
         debug_assert!(
-            pos1.0 < self.dimension.0 && pos2.0 < self.dimension.0,
-            "must be a valid row < # rows"
-        ); 
+            cols.end <= self.dimension.1, 
+            "end of col range must be <= number cols in Self"
+        );
+
+        let n_rows = self.n_rows(); 
+        let n_cols = cols.end - cols.start; 
+        let beg_idx = n_rows * cols.start; 
+        let end_idx = n_rows * cols.end; 
+
+        MatRef::new(
+            &self.buffer[beg_idx..end_idx], 
+            (n_rows, n_cols)
+        )     
+    }
+
+    /// return a [MatMut] for a contiguous column panel of Self 
+    /// 
+    /// contains full columns over a given a range of column indices. 
+    pub fn col_panel_mut(&mut self, cols: Range<usize>) -> MatMut<'_, T> { 
         debug_assert!(
-            pos1.1 < self.dimension.1 && pos2.1 < self.dimension.1,
-            "must be a valid col < # cols"
-        ); 
+            cols.start < cols.end,
+            "start of col range must be < end of col range"
+        );
+        debug_assert!(
+            cols.end <= self.dimension.1, 
+            "end of col range must be <= number cols in Self"
+        );
 
+        let n_rows = self.n_rows(); 
+        let n_cols = cols.end - cols.start; 
+        let beg_idx = n_rows * cols.start; 
+        let end_idx = n_rows * cols.end; 
 
-        let beg_idx = pos1.0 + pos1.1 * self.dimension.0; 
-        let end_idx = pos2.0 + pos2.1 * self.dimension.0; 
+        MatMut::new(
+            &mut self.buffer[beg_idx..end_idx], 
+            (n_rows, n_cols)
+        )     
+    }
 
-        &mut self.buffer[beg_idx..end_idx]
+    /// return [Iterator] over [MatRef]s chunks containing column 
+    /// panels that span Self. 
+    ///
+    /// each chunk holds nc columns, and the last item is the leftover 
+    /// column panel with n_cols < nc 
+    ///
+    /// args: 
+    /// * nc: [usize] - # cols in panel 
+    ///
+    /// returns: 
+    /// * [Iterator] - over ([Range] of column idxs used in panel, [MatRef] of panel itself)
+    pub fn col_panels(&self, nc: usize) -> impl Iterator<Item = (Range<usize>, MatRef<'_, T>)> { 
+        let n_cols = self.n_cols(); 
+        (0..n_cols).step_by(nc).map(move |j0| { 
+            let j1 = usize::min(j0 + nc, n_cols); 
+
+            (Range {start: j0, end: j1}, self.col_panel(j0..j1))
+        })
     }
 
     /// checks whether matrix n_cols equals given length
@@ -279,6 +347,15 @@ impl<'a, T> MatMut<'a, T> {
     /// checks whether matrix n_rows equals given length 
     pub fn has_len_equal_to_n_rows(&self, length: usize) -> bool { 
         self.dimension.0 == length
+    }
+
+    /// used for calling routines over and over again 
+    /// on the stored internal mutable slice 
+    ///
+    /// borrows self mutably
+    pub fn reborrow(&mut self) -> MatMut<'_, T> { 
+        let (n_rows, n_cols) = self.dimension();
+        MatMut::new(self.as_slice_mut(), (n_rows, n_cols))
     }
 }
 
