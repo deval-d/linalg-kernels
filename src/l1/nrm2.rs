@@ -5,7 +5,7 @@ use std::simd::{Simd, SimdElement};
 use std::simd::num::SimdFloat; 
 
 use crate::types::VecRef;
-use crate::traits::Sqrt;
+use crate::traits::{Fma, Sqrt};
 
 const LANES: usize = 32; 
 
@@ -25,12 +25,14 @@ where T: SimdElement
     + AddAssign 
     + Sqrt
     + Add<Output = T> 
-    + Mul<Output = T>,
+    + Mul<Output = T>
+    + Fma, 
 
     Simd<T, LANES>: SimdFloat<Scalar = T>
     + AddAssign 
     + Mul<Output = Simd<T, LANES>> 
-    + Add<Output = Simd<T, LANES>>, 
+    + Add<Output = Simd<T, LANES>> 
+    + Fma, 
 { 
     let x_slice = x.as_slice(); 
 
@@ -40,12 +42,15 @@ where T: SimdElement
     
     for &x_chunk in x_chunks.iter() { 
         let x_vec = Simd::from_array(x_chunk); 
-        accumulator += x_vec * x_vec;
+
+        accumulator = x_vec.fma(x_vec, accumulator); 
     }   
 
     let mut sum = T::default(); 
     for &xt in x_tail.iter() { 
         sum += xt * xt; 
+
+        sum = xt.fma(xt, sum); 
     }
 
     (accumulator.reduce_sum() + sum).sqrt()

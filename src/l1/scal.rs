@@ -1,6 +1,6 @@
 // scal.rs
 
-use std::ops::Mul;
+use std::ops::{Mul, MulAssign};
 
 use crate::types::VecMut; 
 
@@ -15,11 +15,12 @@ pub fn scal<T>(
 ) 
 where T: Mul<Output=T>
     + Copy 
+    + MulAssign, 
 { 
     let x_slice = x.as_slice_mut(); 
 
     // no simd needed, already fast 
     for x_value in x_slice.iter_mut() { 
-        *x_value = alpha * *x_value; 
+        *x_value *= alpha 
     }
 }

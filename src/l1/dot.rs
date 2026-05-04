@@ -4,6 +4,7 @@ use std::ops::{Add, AddAssign, Mul};
 use std::simd::{Simd, SimdElement};
 use std::simd::num::SimdFloat; 
 
+use crate::traits::Fma; 
 use crate::types::VecRef; 
 use crate::assert_length_eq; 
 
@@ -27,11 +28,13 @@ where
         + Default
         + AddAssign
         + Mul<Output = T> 
-        + Add<Output = T>,
+        + Add<Output = T>
+        + Fma, 
 
     Simd<T, LANES>: SimdFloat<Scalar = T> 
         + AddAssign
-        + Mul<Output = Simd<T, LANES>>, 
+        + Mul<Output = Simd<T, LANES>> 
+        + Fma, 
 { 
     assert_length_eq!(x, y); 
 
@@ -45,12 +48,13 @@ where
     for (&x_chunk, &y_chunk) in x_chunks.iter().zip(y_chunks.iter()) { 
         let x_vec = Simd::from_array(x_chunk); 
         let y_vec = Simd::from_array(y_chunk); 
-        accumulator += x_vec * y_vec; 
+
+        accumulator = x_vec.fma(y_vec, accumulator); 
     }
 
     let mut sum = T::default(); 
     for (&xt, &yt) in x_tail.iter().zip(y_tail.iter()) { 
-        sum += xt * yt; 
+        sum = xt.fma(yt, sum); 
     }
 
     accumulator.reduce_sum() + sum 

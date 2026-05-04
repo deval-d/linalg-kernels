@@ -2,6 +2,7 @@
 
 use std::ops::{AddAssign, Mul};
 
+use crate::traits::Fma;
 use crate::types::{VecRef, VecMut}; 
 use crate::assert_length_eq; 
 
@@ -20,7 +21,10 @@ pub fn axpy<T>(
     mut y: VecMut<'_, T>, 
 ) 
 where 
-    T: Copy + AddAssign + Mul<Output = T>, 
+    T: Copy 
+    + AddAssign 
+    + Mul<Output=T>
+    + Fma,
 { 
     assert_length_eq!(x, y); 
 
@@ -29,6 +33,6 @@ where
 
     // no simd needed, already fast
     for (&xv, yv) in x_slice.iter().zip(y_slice.iter_mut()) { 
-        *yv += a * xv; 
+        *yv = a.fma(xv, *yv); 
     }
 }
