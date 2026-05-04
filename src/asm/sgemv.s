@@ -125,50 +125,34 @@ LBB5_6:
 	ldp q7, q6, [x15]
 	ldp q17, q16, [x15, #544]
 	ldp q19, q18, [x15, #512]
-	ldr q20, [x15, #1024]
-	ldr q21, [x15, #1040]
-	ldr q22, [x15, #1056]
-	ldr q23, [x15, #1072]
-	ldr q24, [x15, #1584]
-	ldr q25, [x15, #1568]
-	ldr q26, [x15, #1552]
-	ldr q27, [x15, #1536]
+	ldr q20, [x15, #1072]
+	ldr q21, [x15, #1056]
+	ldr q22, [x15, #1040]
+	ldr q23, [x15, #1024]
+	ldr q24, [x15, #1536]
+	ldr q25, [x15, #1552]
+	ldr q26, [x15, #1568]
+	ldr q27, [x15, #1584]
 	ldp q29, q28, [x16, #32]
 	ldp q31, q30, [x16]
-	fmul.4s v4, v4, v0[0]
-	fmul.4s v5, v5, v0[0]
-	fmul.4s v6, v6, v0[0]
-	fmul.4s v7, v7, v0[0]
-	fadd.4s v7, v7, v31
-	fadd.4s v6, v6, v30
-	fadd.4s v5, v5, v29
-	fadd.4s v4, v4, v28
-	fmul.4s v19, v19, v1[0]
-	fmul.4s v18, v18, v1[0]
-	fmul.4s v17, v17, v1[0]
-	fmul.4s v16, v16, v1[0]
-	fadd.4s v4, v16, v4
-	fadd.4s v5, v17, v5
-	fadd.4s v6, v18, v6
-	fadd.4s v7, v19, v7
-	fmul.4s v16, v23, v2[0]
-	fmul.4s v17, v22, v2[0]
-	fmul.4s v18, v21, v2[0]
-	fmul.4s v19, v20, v2[0]
-	fadd.4s v7, v19, v7
-	fadd.4s v6, v18, v6
-	fadd.4s v5, v17, v5
-	fadd.4s v4, v16, v4
-	fmul.4s v16, v27, v3[0]
-	fmul.4s v17, v26, v3[0]
-	fmul.4s v18, v25, v3[0]
-	fmul.4s v19, v24, v3[0]
-	fadd.4s v4, v19, v4
-	fadd.4s v5, v18, v5
-	fadd.4s v6, v17, v6
-	fadd.4s v7, v16, v7
-	stp q7, q6, [x16]
-	stp q5, q4, [x16, #32]
+	fmla.4s v31, v7, v0[0]
+	fmla.4s v30, v6, v0[0]
+	fmla.4s v29, v5, v0[0]
+	fmla.4s v28, v4, v0[0]
+	fmla.4s v28, v16, v1[0]
+	fmla.4s v29, v17, v1[0]
+	fmla.4s v30, v18, v1[0]
+	fmla.4s v31, v19, v1[0]
+	fmla.4s v31, v23, v2[0]
+	fmla.4s v30, v22, v2[0]
+	fmla.4s v29, v21, v2[0]
+	fmla.4s v28, v20, v2[0]
+	fmla.4s v28, v27, v3[0]
+	fmla.4s v29, v26, v3[0]
+	fmla.4s v30, v25, v3[0]
+	fmla.4s v31, v24, v3[0]
+	stp q31, q30, [x16]
+	stp q29, q28, [x16, #32]
 	add x16, x16, #64
 	add x14, x14, #16
 	add x15, x15, #64
@@ -247,9 +231,8 @@ LBB5_22:
 	fmul s0, s0, s1
 LBB5_23:
 	ldr s1, [x8], #4
-	fmul s1, s0, s1
 	ldr s2, [x12]
-	fadd s1, s1, s2
+	fmadd s1, s0, s1, s2
 	str s1, [x12], #4
 	b LBB5_23
 LBB5_24:

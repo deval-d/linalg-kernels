@@ -6,8 +6,9 @@ use std::simd::num::SimdFloat;
 
 use crate::l1::axpy;
 use crate::types::{MatRef, VecMut, VecRef};
+use crate::traits::Fma; 
 
-pub(crate) const N_ROWS_PER_CHUNK: usize = 16; 
+pub(crate) const N_ROWS_PER_CHUNK: usize = 64; 
 pub(crate) const N_COLS_PER_CHUNK: usize = 4; 
 
 /// a "fused" axpy / mini no-transpose gemv panel: 
@@ -21,11 +22,13 @@ where
     T: SimdElement 
         + AddAssign<T>
         + Mul<Output=T>
-        + Copy,
+        + Copy 
+        + Fma, 
 
     Simd<T, N_ROWS_PER_CHUNK>: SimdFloat<Scalar=T> 
         + AddAssign
-        + Mul<Output = Simd<T, N_ROWS_PER_CHUNK>>, 
+        + Mul<Output = Simd<T, N_ROWS_PER_CHUNK>> 
+        + Fma,
 { 
     let (n_rows, n_cols) = a.dimension(); 
     let n_row_chunks = n_rows / N_ROWS_PER_CHUNK;
@@ -70,10 +73,10 @@ where
             let ychunk = &mut y_slice[y_beg..y_end];
             let mut yv = Simd::<T, N_ROWS_PER_CHUNK>::from_slice(ychunk);
 
-            yv += x1 * c1;
-            yv += x2 * c2;
-            yv += x3 * c3;
-            yv += x4 * c4;
+            yv = x1.fma(c1, yv); 
+            yv = x2.fma(c2, yv); 
+            yv = x3.fma(c3, yv); 
+            yv = x4.fma(c4, yv); 
 
             yv.copy_to_slice(ychunk);
         }
@@ -90,15 +93,17 @@ where
         axpy(alpha * x_slice[j], a_vec, y_vec);
     }
 
-    // doing axpy on leftover rows 
-    for j in 0..n_cols { 
-        let xalpha = alpha * x_slice[j]; 
-        let a_tail = &a_slice[j * n_rows + row_tail_beg..(j + 1) * n_rows]; 
-        let y_tail = &mut y_slice[row_tail_beg..n_rows];
-         
-        let a_vec = VecRef::new(a_tail); 
-        let y_vec = VecMut::new(y_tail); 
-        
-        axpy(xalpha, a_vec, y_vec); 
+    // doing axpy on leftover rows
+    if row_tail_beg < n_rows { 
+        for j in 0..n_cols { 
+            let xalpha = alpha * x_slice[j]; 
+            let a_tail = &a_slice[j * n_rows + row_tail_beg..(j + 1) * n_rows]; 
+            let y_tail = &mut y_slice[row_tail_beg..n_rows];
+             
+            let a_vec = VecRef::new(a_tail); 
+            let y_vec = VecMut::new(y_tail); 
+            
+            axpy(xalpha, a_vec, y_vec); 
+        }
     }
 }
