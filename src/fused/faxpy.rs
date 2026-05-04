@@ -10,9 +10,7 @@ use crate::types::{MatRef, VecMut, VecRef};
 pub(crate) const N_ROWS_PER_CHUNK: usize = 16; 
 pub(crate) const N_COLS_PER_CHUNK: usize = 4; 
 
-/// a "fused" axpy / mini no-transpose GEMV panel: 
-///
-/// y += alpha * A * x 
+/// a "fused" axpy / mini no-transpose gemv panel: 
 pub fn faxpy<T>( 
     alpha: T, 
     a: MatRef<'_, T>, 
