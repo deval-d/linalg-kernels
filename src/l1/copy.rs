@@ -6,8 +6,8 @@ use crate::assert_length_eq;
 /// copies x into y 
 ///
 /// args: 
-/// * x: [VecRef<'_, T>] 
-/// * y: [VecMut<'_, T>] 
+/// * x: [VecRef] - vector x 
+/// * y: [VecMut] - vector y 
 pub fn copy<T>( 
     x: VecRef<'_, T>, 
     mut y: VecMut<'_, T>, 

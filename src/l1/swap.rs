@@ -6,9 +6,11 @@ use crate::assert_length_eq;
 
 /// swaps contents of x and y 
 ///
+/// x <-> y 
+///
 /// args: 
-/// * x: [VecMut<'_, T>] 
-/// * y: [VecMut<'_, T>]
+/// * x: [VecMut] - vector x 
+/// * y: [VecMut] - vector y 
 pub fn swap<T>( 
     mut x: VecMut<'_, T>, 
     mut y: VecMut<'_, T>, 

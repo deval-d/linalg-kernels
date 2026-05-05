@@ -6,15 +6,14 @@ use crate::traits::Fma;
 use crate::types::{VecRef, VecMut}; 
 use crate::assert_length_eq; 
 
-/// ax + y 
+/// alpha x plus y 
+///
+/// y <- alpha * x + y 
 ///
 /// args: 
-/// * a: T - scalar multiplier 
-/// * x: [VecRef<'_, T>] 
-/// * y: [VecMut<'_, T>]
-///
-/// panics: 
-/// if x and y do not have same length. 
+/// * a: T - scales x 
+/// * x: [VecRef] 
+/// * y: [VecMut]
 pub fn axpy<T>( 
     a: T, 
     x: VecRef<'_, T>, 

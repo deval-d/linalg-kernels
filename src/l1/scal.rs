@@ -6,9 +6,11 @@ use crate::types::VecMut;
 
 /// scales x by alpha 
 ///
+/// x <- alpha * x
+///
 /// args: 
-/// * alpha: T - scalar multiplier 
-/// * x: [VecMut<'_, T>] 
+/// * alpha: T - scales x 
+/// * x: [VecMut] - vector x 
 pub fn scal<T>( 
     alpha: T, 
     mut x: VecMut<'_, T>

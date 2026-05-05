@@ -8,13 +8,15 @@ use crate::traits::Fma;
 use crate::types::VecRef; 
 use crate::assert_length_eq; 
 
-const LANES: usize = 32;
+pub(crate) const LANES: usize = 32;
 
 /// the dot product 
 ///
+/// x dot y 
+///
 /// args: 
-/// * x: [VecRef<'_, T>] 
-/// * y: [VecRef<'_, T>] 
+/// * x: [VecRef] 
+/// * y: [VecRef] 
 ///
 /// returns: 
 /// * T - dot product 
@@ -33,7 +35,6 @@ where
 
     Simd<T, LANES>: SimdFloat<Scalar=T> 
         + AddAssign
-        + Mul<Output=Simd<T, LANES>> 
         + Fma, 
 { 
     assert_length_eq!(x, y); 

@@ -9,13 +9,13 @@ use crate::traits::Abs;
 
 const LANES: usize = 32; 
 
-/// sum of absolute value of all elements in x 
+/// sum of the absolute value of all elements in x 
 ///
 /// args: 
-/// * x: [VecRef<'_, T>]
+/// * x: [VecRef] - vector x 
 ///
 /// returns: 
-/// * T: sum of absolute values elements in x 
+/// * T - sum of absolute values elements in x 
 pub fn asum<T>( 
     x: VecRef<'_, T>, 
 ) -> T 

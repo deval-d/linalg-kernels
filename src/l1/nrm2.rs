@@ -9,13 +9,13 @@ use crate::traits::{Fma, Sqrt};
 
 const LANES: usize = 32; 
 
-/// computes norm of x
+/// computes L2 norm of x
 ///
 /// args: 
-/// * x: [VecRef<'_, T>] 
+/// * x: [VecRef] - vector x  
 ///
 /// returns: 
-/// * norm of x 
+/// * T - norm of x 
 pub fn nrm2<T>( 
     x: VecRef<'_, T>, 
 ) -> T
