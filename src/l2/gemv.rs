@@ -7,7 +7,7 @@ use std::simd::{Simd, SimdElement};
 use crate::{assert_length_eq_n_cols, assert_length_eq_n_rows}; 
 use crate::types::{MatRef, VecMut, VecRef};
 use crate::l1::scal::scal;
-use crate::fused::faxpy::{faxpy, LANES}; 
+use crate::fused::faxpy::{faxpy, N_ROWS_PER_CHUNK}; 
 use crate::traits::Fma; 
 
 pub const NC: usize = 128; 
@@ -28,14 +28,18 @@ where
         + SimdElement
         + Fma, 
 
-    Simd<T, LANES>: SimdFloat<Scalar=T>
+    Simd<T, N_ROWS_PER_CHUNK>: SimdFloat<Scalar=T>
         + AddAssign 
-        + Mul<Output=Simd<T, LANES>>
+        + Mul<Output=Simd<T, N_ROWS_PER_CHUNK>>
         + Fma,
 { 
     assert_length_eq_n_cols!(a, x); 
     assert_length_eq_n_rows!(a, y);
 
     scal(beta, y.reborrow()); 
-    faxpy(alpha, a, x, y); 
+
+    for (cols, a_panel) in a.col_panels(NC) {
+        let x_panel = VecRef::new(x.slice(cols)); 
+        faxpy(alpha, a_panel, x_panel, y.reborrow());
+    }
 }

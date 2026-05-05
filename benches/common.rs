@@ -10,7 +10,7 @@ pub const SIZES: &[usize] = &[
 
 #[allow(dead_code)] 
 pub const MATRIX_SIZES: &[usize] = &[ 
-    128, 256, 512, 1028, 2048, 
+    128, 256, 512, 1024, 2048, 
 ]; 
 
 /// calculates 4 * alpha * n^beta + gamma * n
