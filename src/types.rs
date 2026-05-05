@@ -2,6 +2,15 @@
 
 use std::ops::Range;
 
+/// enum for transpose ops 
+/// * [Transpose::NoTranspose] for no-transpose ops
+/// * [Transpose::Transpose] for transpose ops
+#[derive(Clone, Copy, Debug)] 
+pub enum Transpose { 
+    NoTranspose, 
+    Transpose, 
+}
+
 /// immutable vector type 
 #[derive(Clone, Copy, Debug)]
 pub struct VecRef<'a, T> { 
@@ -359,6 +368,8 @@ impl<'a, T> MatMut<'a, T> {
     }
 }
 
+
+/// asserts two [VecRef]/[VecMut] have equal length buffers
 #[macro_export]
 macro_rules! assert_length_eq {
     ($x:expr, $y:expr) => {
@@ -369,6 +380,11 @@ macro_rules! assert_length_eq {
     };
 }
 
+
+/// asserts the length of a [VecRef]/[VecMut] buffer 
+/// equals the number of cols in a [MatRef]/[MatMut] 
+///
+/// a.assert_length_eq_n_cols(x); 
 #[macro_export]
 macro_rules! assert_length_eq_n_cols {
     ($a:expr, $x:expr) => {
@@ -379,6 +395,10 @@ macro_rules! assert_length_eq_n_cols {
     };
 }
 
+/// asserts the length of a [VecRef]/[VecMut] buffer 
+/// equals the number of rows in a [MatRef]/[MatMut] 
+///
+/// a.assert_length_eq_n_rows(x); 
 #[macro_export]
 macro_rules! assert_length_eq_n_rows {
     ($a:expr, $x:expr) => {
