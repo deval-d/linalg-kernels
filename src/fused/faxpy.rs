@@ -8,102 +8,120 @@ use crate::l1::axpy;
 use crate::types::{MatRef, VecMut, VecRef};
 use crate::traits::Fma; 
 
-pub(crate) const N_ROWS_PER_CHUNK: usize = 64; 
-pub(crate) const N_COLS_PER_CHUNK: usize = 4; 
+pub(crate) const MR: usize = 256; 
+pub(crate) const NR: usize = 4; 
+pub(crate) const LANES: usize = 32; 
 
-/// a "fused" axpy / mini no-transpose gemv panel: 
 pub fn faxpy<T>( 
     alpha: T, 
-    a: MatRef<'_, T>, 
+    a: MatRef<'_, T>,
     x: VecRef<'_, T>, 
-    mut y: VecMut<'_, T>, 
+    mut y: VecMut<'_, T>
 ) 
-where
+where  
     T: SimdElement 
         + AddAssign<T>
         + Mul<Output=T>
         + Copy 
         + Fma, 
 
-    Simd<T, N_ROWS_PER_CHUNK>: SimdFloat<Scalar=T> 
+    Simd<T, LANES>: SimdFloat<Scalar=T> 
         + AddAssign
-        + Mul<Output = Simd<T, N_ROWS_PER_CHUNK>> 
+        + Mul<Output = Simd<T, LANES>> 
         + Fma,
 { 
     let (n_rows, n_cols) = a.dimension(); 
-    let n_row_chunks = n_rows / N_ROWS_PER_CHUNK;
-    let n_col_chunks = n_cols / N_COLS_PER_CHUNK;
 
     let a_slice = a.as_slice(); 
     let x_slice = x.as_slice(); 
     let y_slice = y.as_slice_mut(); 
 
-    for col_chunk in 0..n_col_chunks {
-        let j = col_chunk * N_COLS_PER_CHUNK;
+    let mut i_base = 0; 
+    while i_base < n_rows { 
+        let mr = (n_rows - i_base).min(MR); 
 
-        let x1 = Simd::<T, N_ROWS_PER_CHUNK>::splat(alpha * x_slice[j]);
-        let x2 = Simd::<T, N_ROWS_PER_CHUNK>::splat(alpha * x_slice[j + 1]);
-        let x3 = Simd::<T, N_ROWS_PER_CHUNK>::splat(alpha * x_slice[j + 2]);
-        let x4 = Simd::<T, N_ROWS_PER_CHUNK>::splat(alpha * x_slice[j + 3]);
+        let y_panel = &mut y_slice[i_base..i_base + mr]; 
+        
+        let (y_chunks, y_tail) = y_panel.as_chunks_mut::<LANES>(); 
+        let n_chunks = y_chunks.len(); 
 
-        for row_chunk in 0..n_row_chunks {
-            let i = row_chunk * N_ROWS_PER_CHUNK;
+        if n_chunks > 0 { 
+            let mut j = 0; 
+            while j + NR <= n_cols { 
+                let x0 = x_slice[j]; 
+                let x1 = x_slice[j + 1]; 
+                let x2 = x_slice[j + 2]; 
+                let x3 = x_slice[j + 3]; 
 
-            let y_beg = i;
-            let y_end = i + N_ROWS_PER_CHUNK;
+                let x0v = Simd::<T, LANES>::splat(x0 * alpha); 
+                let x1v = Simd::<T, LANES>::splat(x1 * alpha);
+                let x2v = Simd::<T, LANES>::splat(x2 * alpha); 
+                let x3v = Simd::<T, LANES>::splat(x3 * alpha);
 
-            let col1_beg = j * n_rows + i;
-            let col2_beg = (j + 1) * n_rows + i;
-            let col3_beg = (j + 2) * n_rows + i;
-            let col4_beg = (j + 3) * n_rows + i;
+                let col0_beg = j * n_rows + i_base; 
+                let col0_end = col0_beg + mr; 
 
-            let c1 = Simd::<T, N_ROWS_PER_CHUNK>::from_slice(
-                &a_slice[col1_beg..col1_beg + N_ROWS_PER_CHUNK],
-            );
-            let c2 = Simd::<T, N_ROWS_PER_CHUNK>::from_slice(
-                &a_slice[col2_beg..col2_beg + N_ROWS_PER_CHUNK],
-            );
-            let c3 = Simd::<T, N_ROWS_PER_CHUNK>::from_slice(
-                &a_slice[col3_beg..col3_beg + N_ROWS_PER_CHUNK],
-            );
-            let c4 = Simd::<T, N_ROWS_PER_CHUNK>::from_slice(
-                &a_slice[col4_beg..col4_beg + N_ROWS_PER_CHUNK],
-            );
+                let col0 = &a_slice[col0_beg..col0_end]; 
+                let col1 = &a_slice[col0_beg + n_rows..col0_end + n_rows]; 
+                let col2 = &a_slice[col0_beg + 2 * n_rows..col0_end + 2 * n_rows]; 
+                let col3 = &a_slice[col0_beg + 3 * n_rows..col0_end + 3 * n_rows]; 
 
-            let ychunk = &mut y_slice[y_beg..y_end];
-            let mut yv = Simd::<T, N_ROWS_PER_CHUNK>::from_slice(ychunk);
+                let (col0_chunks, _) = col0.as_chunks::<LANES>(); 
+                let (col1_chunks, _) = col1.as_chunks::<LANES>(); 
+                let (col2_chunks, _) = col2.as_chunks::<LANES>(); 
+                let (col3_chunks, _) = col3.as_chunks::<LANES>(); 
 
-            yv = x1.fma(c1, yv); 
-            yv = x2.fma(c2, yv); 
-            yv = x3.fma(c3, yv); 
-            yv = x4.fma(c4, yv); 
+                for (chunk_idx, y_chunk) in y_chunks.iter_mut().enumerate() { 
+                    let mut yv = Simd::<T, LANES>::from_array(*y_chunk); 
 
-            yv.copy_to_slice(ychunk);
+                    let a0 = Simd::from_array(col0_chunks[chunk_idx]); 
+                    let a1 = Simd::from_array(col1_chunks[chunk_idx]); 
+                    let a2 = Simd::from_array(col2_chunks[chunk_idx]); 
+                    let a3 = Simd::from_array(col3_chunks[chunk_idx]); 
+
+                    yv = a0.fma(x0v, yv); 
+                    yv = a1.fma(x1v, yv); 
+                    yv = a2.fma(x2v, yv); 
+                    yv = a3.fma(x3v, yv); 
+
+                    *y_chunk = yv.to_array(); 
+                }
+
+                j += NR; 
+            }
+
+            // leftover cols 
+            while j < n_cols { 
+                let xj = alpha * x_slice[j]; 
+                let xv = Simd::<T, LANES>::splat(xj); 
+
+                let col = &a_slice[j * n_rows + i_base .. j * n_rows + i_base + mr]; 
+                let (col_chunks, _) = col.as_chunks::<LANES>(); 
+
+                for (chunk_idx, y_chunk) in y_chunks.iter_mut().enumerate() { 
+                    let mut yv = Simd::from_array(*y_chunk); 
+                    let av = Simd::from_array(col_chunks[chunk_idx]); 
+                    yv = av.fma(xv, yv); 
+
+                    *y_chunk = yv.to_array(); 
+                }
+
+                j += 1; 
+            }  
         }
-    }
 
-    let row_tail_beg = n_row_chunks * N_ROWS_PER_CHUNK; 
-    let col_tail_beg = n_col_chunks * N_COLS_PER_CHUNK; 
+        // leftover rows 
+        if !y_tail.is_empty() { 
+            for (j, &xj) in x_slice.iter().enumerate() { 
+                let col_beg = j * n_rows + n_chunks * LANES + i_base; 
+                let col_end = col_beg + y_tail.len(); 
 
-    // doing axpy on leftover columns 
-    for j in col_tail_beg..n_cols {
-        let a_vec = VecRef::new(&a_slice[j * n_rows..j * n_rows + row_tail_beg]);
-        let y_vec = VecMut::new(&mut y_slice[..row_tail_beg]);
-
-        axpy(alpha * x_slice[j], a_vec, y_vec);
-    }
-
-    // doing axpy on leftover rows
-    if row_tail_beg < n_rows { 
-        for j in 0..n_cols { 
-            let xalpha = alpha * x_slice[j]; 
-            let a_tail = &a_slice[j * n_rows + row_tail_beg..(j + 1) * n_rows]; 
-            let y_tail = &mut y_slice[row_tail_beg..n_rows];
-             
-            let a_vec = VecRef::new(a_tail); 
-            let y_vec = VecMut::new(y_tail); 
-            
-            axpy(xalpha, a_vec, y_vec); 
+                let av = VecRef::new(&a_slice[col_beg..col_end]); 
+                let yv = VecMut::new(y_tail); 
+                axpy(xj * alpha, av, yv); 
+            }
         }
+
+        i_base += mr; 
     }
 }
