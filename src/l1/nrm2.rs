@@ -24,14 +24,14 @@ where T: SimdElement
     + Default
     + AddAssign 
     + Sqrt
-    + Add<Output = T> 
-    + Mul<Output = T>
+    + Add<Output=T> 
+    + Mul<Output=T>
     + Fma, 
 
-    Simd<T, LANES>: SimdFloat<Scalar = T>
+    Simd<T, LANES>: SimdFloat<Scalar=T>
     + AddAssign 
-    + Mul<Output = Simd<T, LANES>> 
-    + Add<Output = Simd<T, LANES>> 
+    + Mul<Output=Simd<T, LANES>> 
+    + Add<Output=Simd<T, LANES>> 
     + Fma, 
 { 
     let x_slice = x.as_slice(); 
@@ -48,8 +48,6 @@ where T: SimdElement
 
     let mut sum = T::default(); 
     for &xt in x_tail.iter() { 
-        sum += xt * xt; 
-
         sum = xt.fma(xt, sum); 
     }
 

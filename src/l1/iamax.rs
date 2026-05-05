@@ -1,8 +1,7 @@
 // iamax.rs 
 
-use std::simd::{Mask, Simd, SimdElement}; 
+use std::simd::{Simd, SimdElement}; 
 use std::simd::num::SimdFloat; 
-use std::simd::cmp::{SimdPartialEq, SimdPartialOrd}; 
 
 use crate::types::VecRef; 
 use crate::traits::Abs;
@@ -26,9 +25,7 @@ where
         + PartialOrd
         + Abs,
 
-    Simd<T, LANES>: SimdFloat<Scalar = T>
-        + SimdPartialEq<Mask = Mask<<T as SimdElement>::Mask, LANES>>
-        + SimdPartialOrd,
+    Simd<T, LANES>: SimdFloat<Scalar=T>
 { 
     let x_slice = x.as_slice(); 
     let (x_chunks, x_tail) = x_slice.as_chunks::<LANES>(); 

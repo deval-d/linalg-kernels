@@ -13,9 +13,10 @@ pub fn scal<T>(
     alpha: T, 
     mut x: VecMut<'_, T>
 ) 
-where T: Mul<Output=T>
-    + Copy 
-    + MulAssign, 
+where 
+    T: Mul<Output=T>
+        + Copy 
+        + MulAssign, 
 { 
     let x_slice = x.as_slice_mut(); 
 

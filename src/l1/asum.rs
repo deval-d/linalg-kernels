@@ -27,7 +27,7 @@ where
         + Abs 
         + Add<Output=T>, 
 
-    Simd<T, LANES>: SimdFloat<Scalar = T> 
+    Simd<T, LANES>: SimdFloat<Scalar=T> 
         + AddAssign
         + Add<Output=Simd<T, LANES>>
 {

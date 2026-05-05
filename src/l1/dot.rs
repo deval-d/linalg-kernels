@@ -27,13 +27,13 @@ where
         + Copy
         + Default
         + AddAssign
-        + Mul<Output = T> 
-        + Add<Output = T>
+        + Mul<Output=T> 
+        + Add<Output=T>
         + Fma, 
 
-    Simd<T, LANES>: SimdFloat<Scalar = T> 
+    Simd<T, LANES>: SimdFloat<Scalar=T> 
         + AddAssign
-        + Mul<Output = Simd<T, LANES>> 
+        + Mul<Output=Simd<T, LANES>> 
         + Fma, 
 { 
     assert_length_eq!(x, y); 
