@@ -91,14 +91,14 @@ where
 /// y <- alpha * A * x + beta * y 
 ///
 /// args: 
-/// * op: [Transpose] - whether to use A or A^T 
+/// * trans: [Transpose] - whether to use A or A^T 
 /// * alpha: T - scales A * x 
 /// * beta: T - scales y 
 /// * a: [MatRef] - matrix A 
 /// * x: [VecRef] - vector x 
 /// * y: [VecMut] - vector y
 pub fn gemv<T>( 
-    op: Transpose, 
+    trans: Transpose, 
     alpha: T, 
     beta: T, 
     a: MatRef<'_, T>, 
@@ -123,7 +123,7 @@ where
         + Fma
         + AddAssign,      
 {
-    match op { 
+    match trans { 
         Transpose::NoTranspose => gemv_n(alpha, beta, a, x, y), 
         Transpose::Transpose   => gemv_t(alpha, beta, a, x, y), 
     }
