@@ -4,13 +4,14 @@ use common::{bench_rng, bytes_count_f32, flops_count, MATRIX_SIZES};
 
 use blas_src as _; 
 use cblas_sys::{ 
-    cblas_sgemv, cblas_sger, 
+    cblas_sgemv, cblas_sger, cblas_strmv, 
 };
 
 use lak::helpers::make_vec_random;
 use lak::l2::gemv::gemv;
 use lak::l2::ger::ger;
-use lak::types::{MatMut, MatRef, Transpose, VecMut, VecRef};
+use lak::l2::trmv::trmv;
+use lak::types::{MatMut, MatRef, Transpose, Triangular, VecMut, VecRef};
 
 use divan::counter::{BytesCount, ItemsCount};
 use divan::{black_box, Bencher};
@@ -37,7 +38,7 @@ fn lak_sgemv_n(bencher: Bencher, n: usize) {
     let mut ybuf = y_init.clone();
 
     bencher
-        .counter(BytesCount::new(bytes_count_f32(1, 2, 3, n) as u64))
+        .counter(BytesCount::new(bytes_count_f32(1.0, 2, 3.0, n as f32) as u64))
         .counter(ItemsCount::new(flops_count(2, 2, 3, n) as u64))
         .bench_local(|| {
             // for n = 2048 this is only 8 KB, while A is 16 MB
@@ -75,7 +76,7 @@ fn blas_sgemv_n(bencher: Bencher, n: usize) {
     let mut ybuf = y_init.clone();
 
     bencher
-        .counter(BytesCount::new(bytes_count_f32(1, 2, 3, n) as u64))
+        .counter(BytesCount::new(bytes_count_f32(1.0, 2, 3.0, n as f32) as u64))
         .counter(ItemsCount::new(flops_count(2, 2, 3, n) as u64))
         .bench_local(|| {
             ybuf.copy_from_slice(&y_init);
@@ -115,7 +116,7 @@ fn lak_sgemv_t(bencher: Bencher, n: usize) {
     let mut ybuf = y_init.clone();
 
     bencher
-        .counter(BytesCount::new(bytes_count_f32(1, 2, 3, n) as u64))
+        .counter(BytesCount::new(bytes_count_f32(1.0, 2, 3.0, n as f32) as u64))
         .counter(ItemsCount::new(flops_count(2, 2, 3, n) as u64))
         .bench_local(|| {
             // for n = 2048 this is only 8 KB, while a is 16 MB
@@ -153,7 +154,7 @@ fn blas_sgemv_t(bencher: Bencher, n: usize) {
     let mut ybuf = y_init.clone();
 
     bencher
-        .counter(BytesCount::new(bytes_count_f32(1, 2, 3, n) as u64))
+        .counter(BytesCount::new(bytes_count_f32(1.0, 2, 3.0, n as f32) as u64))
         .counter(ItemsCount::new(flops_count(2, 2, 3, n) as u64))
         .bench_local(|| {
             ybuf.copy_from_slice(&y_init);
@@ -196,7 +197,7 @@ fn blas_sger(bencher: Bencher, n: usize) {
     let mut abuf = a_init.clone(); 
 
     bencher
-        .counter(BytesCount::new(bytes_count_f32(2, 2, 2, n) as u64))
+        .counter(BytesCount::new(bytes_count_f32(2.0, 2, 2.0, n as f32) as u64))
         .counter(ItemsCount::new(flops_count(2, 2, 0, n) as u64))
         .bench_local(|| {
             abuf.copy_from_slice(&a_init);
@@ -233,7 +234,7 @@ fn lak_sger(bencher: Bencher, n: usize) {
     let mut abuf = a_init.clone(); 
 
     bencher
-        .counter(BytesCount::new(bytes_count_f32(2, 2, 2, n) as u64))
+        .counter(BytesCount::new(bytes_count_f32(2.0, 2, 2.0, n as f32) as u64))
         .counter(ItemsCount::new(flops_count(2, 2, 0, n) as u64))
         .bench_local(|| {
             abuf.copy_from_slice(&a_init);
@@ -247,6 +248,68 @@ fn lak_sger(bencher: Bencher, n: usize) {
             black_box(&ybuf);
         });
 }
+
+
+// trmv \\ 
+
+
+#[divan::bench(args = MATRIX_SIZES)]
+fn lak_strmv_ln(bencher: Bencher, n: usize) {
+    let rng = &mut bench_rng(2);
+
+    let mut xbuf: Vec<f32> = make_vec_random(n, rng);
+    let xbuf_init = xbuf.clone();
+    let abuf: Vec<f32> = make_vec_random(n * n, rng);
+
+    bencher
+        .counter(BytesCount::new(bytes_count_f32(1.5, 2, 0.5, n as f32) as u64))
+        .counter(ItemsCount::new(flops_count(1, 2, 0, n) as u64))
+        .bench_local(|| {
+            xbuf.copy_from_slice(&xbuf_init);
+
+            let a = MatRef::new(&abuf, (n, n)); 
+            let x = VecMut::new(&mut xbuf); 
+
+            trmv(Triangular::Lower, Transpose::NoTranspose, a, x); 
+
+            black_box(&xbuf);
+        });
+}
+
+#[divan::bench(args = MATRIX_SIZES)]
+fn blas_strmv_ln(bencher: Bencher, n: usize) {
+    let rng = &mut bench_rng(2);
+
+    let mut xbuf: Vec<f32> = make_vec_random(n, rng);
+    let xbuf_init = xbuf.clone();
+    let abuf: Vec<f32> = make_vec_random(n * n, rng);
+
+    bencher
+        .counter(BytesCount::new(bytes_count_f32(1.5, 2, 0.5, n as f32) as u64))
+        .counter(ItemsCount::new(flops_count(1, 2, 0, n) as u64))
+        .bench_local(|| {
+            xbuf.copy_from_slice(&xbuf_init);
+
+            unsafe { 
+                cblas_strmv( 
+                    cblas_sys::CBLAS_LAYOUT::CblasColMajor,
+                    cblas_sys::CBLAS_UPLO::CblasLower, 
+                    cblas_sys::CBLAS_TRANSPOSE::CblasNoTrans, 
+                    cblas_sys::CBLAS_DIAG::CblasNonUnit, 
+                    n as i32, 
+                    abuf.as_ptr(), 
+                    n as i32, 
+                    xbuf.as_mut_ptr(), 
+                    1 as i32,
+                ) 
+
+            }
+
+            black_box(&xbuf);
+        });
+}
+
+
 
 
 

@@ -42,7 +42,7 @@ pub fn lak_sasum(bencher: Bencher, n: usize) {
     let x = VecRef::new(&xbuf); 
 
     bencher
-        .counter(BytesCount::new(bytes_count_f32(1, 1, 0, n) as u64))
+        .counter(BytesCount::new(bytes_count_f32(1.0, 1, 0.0, n as f32) as u64))
         .bench(|| { asum(x) });
 }
 
@@ -52,7 +52,7 @@ fn blas_sasum(bencher: Bencher, n: usize) {
     let xbuf = make_vec_random(n, rng);
 
     bencher
-        .counter(BytesCount::new(bytes_count_f32(1, 1, 0, n) as u64))
+        .counter(BytesCount::new(bytes_count_f32(1.0, 1, 0.0, n as f32) as u64))
         .bench(|| { 
             unsafe {
                 cblas_sasum(
@@ -77,7 +77,7 @@ pub fn lak_saxpy(bencher: Bencher, n: usize) {
     let x = VecRef::new(&xbuf);
 
     bencher
-        .counter(BytesCount::new(bytes_count_f32(3, 1, 0, n) as u64))
+        .counter(BytesCount::new(bytes_count_f32(3.0, 1, 0.0, n as f32) as u64))
         .bench_local(|| {
             let y = VecMut::new(&mut ybuf);
             axpy(3.1415926, x, y);
@@ -91,7 +91,7 @@ fn blas_saxpy(bencher: Bencher, n: usize) {
     let mut ybuf: Vec<f32> = make_vec_random(n, rng);
 
     bencher
-        .counter(BytesCount::new(bytes_count_f32(3, 1, 0, n) as u64))
+        .counter(BytesCount::new(bytes_count_f32(3.0, 1, 0.0, n as f32) as u64))
         .bench_local(|| {
             unsafe {
                 cblas_saxpy(
@@ -119,7 +119,7 @@ pub fn lak_scopy(bencher: Bencher, n: usize) {
     let x = VecRef::new(&xbuf);
 
     bencher
-        .counter(BytesCount::new(bytes_count_f32(2, 1, 0, n) as u64))
+        .counter(BytesCount::new(bytes_count_f32(2.0, 1, 0.0, n as f32) as u64))
         .bench_local(|| {
             let y = VecMut::new(&mut ybuf);
             copy(x, y);
@@ -133,7 +133,7 @@ fn blas_scopy(bencher: Bencher, n: usize) {
     let mut ybuf: Vec<f32> = make_vec_random(n, rng);
 
     bencher
-        .counter(BytesCount::new(bytes_count_f32(2, 1, 0, n) as u64))
+        .counter(BytesCount::new(bytes_count_f32(2.0, 1, 0.0, n as f32) as u64))
         .bench_local(|| {
             unsafe {
                 cblas_scopy(
@@ -161,7 +161,7 @@ pub fn lak_sdot(bencher: Bencher, n: usize) {
     let y = VecRef::new(&ybuf);
 
     bencher
-        .counter(BytesCount::new(bytes_count_f32(2, 1, 0, n) as u64))
+        .counter(BytesCount::new(bytes_count_f32(2.0, 1, 0.0, n as f32) as u64))
         .bench(|| {
             dot(x, y)
         });
@@ -174,7 +174,7 @@ fn blas_sdot(bencher: Bencher, n: usize) {
     let ybuf: Vec<f32> = make_vec_random(n, rng);
 
     bencher
-        .counter(BytesCount::new(bytes_count_f32(2, 1, 0, n) as u64))
+        .counter(BytesCount::new(bytes_count_f32(2.0, 1, 0.0, n as f32) as u64))
         .bench(|| {
             unsafe {
                 cblas_sdot(
@@ -199,7 +199,7 @@ pub fn lak_isamax(bencher: Bencher, n: usize) {
     let x = VecRef::new(&xbuf);
 
     bencher
-        .counter(BytesCount::new(bytes_count_f32(1, 1, 0, n) as u64))
+        .counter(BytesCount::new(bytes_count_f32(1.0, 1, 0.0, n as f32) as u64))
         .bench(|| {
             iamax(x)
         });
@@ -211,7 +211,7 @@ fn blas_isamax(bencher: Bencher, n: usize) {
     let xbuf: Vec<f32> = make_vec_random(n, rng);
 
     bencher
-        .counter(BytesCount::new(bytes_count_f32(1, 1, 0, n) as u64))
+        .counter(BytesCount::new(bytes_count_f32(1.0, 1, 0.0, n as f32) as u64))
         .bench(|| {
             unsafe {
                 cblas_isamax(
@@ -234,7 +234,7 @@ pub fn lak_snrm2(bencher: Bencher, n: usize) {
     let x = VecRef::new(&xbuf);
 
     bencher
-        .counter(BytesCount::new(bytes_count_f32(1, 1, 0, n) as u64))
+        .counter(BytesCount::new(bytes_count_f32(1.0, 1, 0.0, n as f32) as u64))
         .bench(|| {
             nrm2(x)
         });
@@ -246,7 +246,7 @@ fn blas_snrm2(bencher: Bencher, n: usize) {
     let xbuf: Vec<f32> = make_vec_random(n, rng);
 
     bencher
-        .counter(BytesCount::new(bytes_count_f32(1, 1, 0, n) as u64))
+        .counter(BytesCount::new(bytes_count_f32(1.0, 1, 0.0, n as f32) as u64))
         .bench(|| {
             unsafe {
                 cblas_snrm2(
@@ -268,7 +268,7 @@ pub fn lak_sscal(bencher: Bencher, n: usize) {
     let mut xbuf: Vec<f32> = make_vec_random(n, rng);
 
     bencher
-        .counter(BytesCount::new(bytes_count_f32(2, 1, 0, n) as u64))
+        .counter(BytesCount::new(bytes_count_f32(2.0, 1, 0.0, n as f32) as u64))
         .bench_local(|| {
             let x = VecMut::new(&mut xbuf);
             scal(3.1415926, x);
@@ -281,7 +281,7 @@ fn blas_sscal(bencher: Bencher, n: usize) {
     let mut xbuf: Vec<f32> = make_vec_random(n, rng);
 
     bencher
-        .counter(BytesCount::new(bytes_count_f32(2, 1, 0, n) as u64))
+        .counter(BytesCount::new(bytes_count_f32(2.0, 1, 0.0, n as f32) as u64))
         .bench_local(|| {
             unsafe {
                 cblas_sscal(
@@ -305,7 +305,7 @@ pub fn lak_sswap(bencher: Bencher, n: usize) {
     let mut ybuf: Vec<f32> = make_vec_random(n, rng);
 
     bencher
-        .counter(BytesCount::new(bytes_count_f32(4, 1, 0, n) as u64))
+        .counter(BytesCount::new(bytes_count_f32(4.0, 1, 0.0, n as f32) as u64))
         .bench_local(|| {
             let x = VecMut::new(&mut xbuf);
             let y = VecMut::new(&mut ybuf);
@@ -321,7 +321,7 @@ fn blas_sswap(bencher: Bencher, n: usize) {
     let mut ybuf: Vec<f32> = make_vec_random(n, rng);
 
     bencher
-        .counter(BytesCount::new(bytes_count_f32(4, 1, 0, n) as u64))
+        .counter(BytesCount::new(bytes_count_f32(4.0, 1, 0.0, n as f32) as u64))
         .bench_local(|| {
             unsafe {
                 cblas_sswap(

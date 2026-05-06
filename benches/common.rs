@@ -20,12 +20,12 @@ pub const MATRIX_SIZES: &[usize] = &[
 /// * gamma: [usize] - scalar multiplier in front of n 
 /// * n: [usize] - length of vector(s)
 pub fn bytes_count_f32(
-    alpha: usize, 
-    beta: u32,
-    gamma: usize,
-    n: usize
-) -> usize {
-    std::mem::size_of::<f32>() * (alpha * n.pow(beta) + gamma * n) 
+    alpha: f32, 
+    beta: i32,
+    gamma: f32,
+    n: f32,
+) -> f32 {
+    (std::mem::size_of::<f32>() as f32) * (alpha * n.powi(beta) + gamma * n) 
 }
 
 /// calculates alpha * n^beta + gamma * n
