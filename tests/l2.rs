@@ -4,3 +4,5 @@ mod common;
 mod gemv; 
 #[path = "l2/ger.rs"] 
 mod ger;
+#[path = "l2/trmv.rs"] 
+mod trmv; 
