@@ -11,6 +11,15 @@ pub enum Transpose {
     Transpose, 
 }
 
+/// enum for triangular ops 
+/// * [Triangular::Upper] for upper-triangular ops 
+/// * [Triangular::Lower] for lower-triangular ops
+#[derive(Clone, Copy, Debug)] 
+pub enum Triangular { 
+    Upper, 
+    Lower, 
+}
+
 /// immutable vector type 
 #[derive(Clone, Copy, Debug)]
 pub struct VecRef<'a, T> { 
