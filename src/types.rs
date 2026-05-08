@@ -203,7 +203,7 @@ impl<'a, T> MatRef<'a, T> {
     ///
     /// returns: 
     /// * [Iterator] - over ([Range] of column idxs used in panel, [MatRef] of panel itself)
-    pub fn col_panels(&self, nc: usize) -> impl Iterator<Item = (Range<usize>, MatRef<'_, T>)> { 
+    pub fn col_panels(&self, nc: usize) -> impl DoubleEndedIterator<Item = (Range<usize>, MatRef<'_, T>)> { 
         debug_assert!(nc > 0, "nc must be > 0"); 
 
         let n_cols = self.n_cols(); 
@@ -348,7 +348,7 @@ impl<'a, T> MatMut<'a, T> {
     ///
     /// returns: 
     /// * [Iterator] - over ([Range] of column idxs used in panel, [MatRef] of panel itself)
-    pub fn col_panels(&self, nc: usize) -> impl Iterator<Item = (Range<usize>, MatRef<'_, T>)> { 
+    pub fn col_panels(&self, nc: usize) -> impl DoubleEndedIterator<Item = (Range<usize>, MatRef<'_, T>)> { 
         let n_cols = self.n_cols(); 
         (0..n_cols).step_by(nc).map(move |j0| { 
             let j1 = usize::min(j0 + nc, n_cols); 
