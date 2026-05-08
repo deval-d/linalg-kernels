@@ -128,21 +128,63 @@ where
     let a_slice = a.as_slice(); 
     let x_slice = x.as_slice_mut();
 
-    for j in 0..n_cols { 
-        let xj = x_slice[j]; 
+    for (cols, a_panel) in a.col_panels(N_COLS_PER_CHUNK) { 
+        // last panel 
+        if cols.end - cols.start != N_COLS_PER_CHUNK { 
+            for j in cols { 
+                let xj = x_slice[j]; 
 
-        let acol = &a_slice[j * n..j * (n + 1)]; 
-        let xcol = &mut x_slice[..j];
+                let acol = &a_slice[j * n..j * (n + 1)]; 
+                let xcol = &mut x_slice[..j]; 
 
-        axpy( 
-            xj, 
-            VecRef::new(acol), 
-            VecMut::new(xcol), 
-        ); 
+                axpy( 
+                    xj, 
+                    VecRef::new(acol), 
+                    VecMut::new(xcol), 
+                ); 
 
-        x_slice[j] *= a_slice[j * n + j]; 
+                x_slice[j] *= a_slice[j * (n + 1)]; 
+            }
+        } else {
+            let j0 = cols.start; 
+
+            let col0 = a_panel.col(0);
+            let col1 = a_panel.col(1);
+            let col2 = a_panel.col(2);
+            let col3 = a_panel.col(3);
+
+            let c0 = &col0.as_slice()[..j0]; 
+            let c1 = &col1.as_slice()[..j0]; 
+            let c2 = &col2.as_slice()[..j0]; 
+            let c3 = &col3.as_slice()[..j0]; 
+
+            let x0 = x_slice[j0]; 
+            let x1 = x_slice[j0 + 1]; 
+            let x2 = x_slice[j0 + 2]; 
+            let x3 = x_slice[j0 + 3]; 
+
+            ftrmv_n( 
+                c0, c1, c2, c3, 
+                x0, x1, x2, x3, 
+                &mut x_slice[..j0],
+            ); 
+
+            for j in cols { 
+                let xj = x_slice[j]; 
+
+                let acol = &a.as_slice()[j * n + j0..j * (n + 1)]; 
+                let xcol = &mut x_slice[j0..j]; 
+
+                axpy( 
+                    xj, 
+                    VecRef::new(acol), 
+                    VecMut::new(xcol), 
+                ); 
+
+                x_slice[j] *= a_slice[j * (n + 1)]; 
+            }
+        }
     }
-
 }
 
 /// triangular matrix-vector multiply 
