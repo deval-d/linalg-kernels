@@ -4,7 +4,7 @@ use std::ops::{Add, AddAssign, Mul, MulAssign};
 use std::simd::{Simd, SimdElement}; 
 use std::simd::num::SimdFloat; 
 
-use crate::fused::ftrmv::ftrmv;
+use crate::fused::ftrmv::ftrmv_n;
 use crate::traits::Fma; 
 use crate::assert_length_eq_n_cols; 
 
@@ -18,18 +18,8 @@ use crate::types::{Triangular, Transpose};
 // inner kernels depend on 4
 pub(crate) const N_COLS_PER_CHUNK: usize = 4;  
 
-
-// 
-// plan 
-//
-// issue is calling axpy ever column j is too inefficient
-// and instead re-loads x[j:] every iteration. 
-//
-// however, there exist common full rectangular panels 
-// below each 4x4 triangular block on the diagonal. so we do those using axpy. 
-// and then fuse op the lower column. 
-
-
+/// trmv 
+/// lower-triangular no-transpose variant 
 pub(crate) fn trmv_ln<T>( 
     a: MatRef<'_, T>, 
     mut x: VecMut<'_, T>, 
@@ -56,9 +46,9 @@ where
     let a_slice = a.as_slice(); 
     let x_slice = x.as_slice_mut(); 
 
-    for (idx, (cols, a_panel)) in a.col_panels(N_COLS_PER_CHUNK).rev().enumerate() { 
+    for (cols, a_panel) in a.col_panels(N_COLS_PER_CHUNK).rev() { 
         // last panel 
-        if idx == 0 { 
+        if cols.end - cols.start != N_COLS_PER_CHUNK { 
             for j in cols.rev() { 
                 let xj = x_slice[j];
                 let a_col = VecRef::new(&a_slice[j * n + j + 1..(j + 1) * n]); 
@@ -69,7 +59,6 @@ where
                 x_slice[j] *= a_slice[j * (n + 1)]; 
             }   
         } else { 
-            // full lower rectangular cols 
             let j0 = cols.start; 
             let j1 = cols.end; 
 
@@ -78,7 +67,7 @@ where
             let col2 = a_panel.col(2);
             let col3 = a_panel.col(3);
 
-            // all cols start at same height 
+            // full lower rectangular cols 
             // below the N_COLS_ x N_COLS_ triangular block on diagonal 
             let c0 = &col0.as_slice()[j0 + N_COLS_PER_CHUNK..]; 
             let c1 = &col1.as_slice()[j0 + N_COLS_PER_CHUNK..]; 
@@ -90,14 +79,13 @@ where
             let x2 = x_slice[j0 + 2]; 
             let x3 = x_slice[j0 + 3]; 
 
-            ftrmv( 
+            ftrmv_n( 
                 c0, c1, c2, c3,
                 x0, x1, x2, x3, 
                 &mut x_slice[j1..n], 
             ); 
 
             // triangular block on diagonal  
-            // fixed bottom (above the rectangular panel)
             for j in cols.rev() { 
                 let xj = x_slice[j];
 
@@ -112,6 +100,50 @@ where
     }
 }
 
+/// trmv 
+/// upper-triangular no-transpose variant 
+pub(crate) fn trmv_un<T>( 
+    a: MatRef<'_, T>, 
+    mut x: VecMut<'_, T>,  
+)
+where 
+    T: Copy 
+    + AddAssign 
+    + MulAssign
+    + Mul<Output=T>
+    + Add<Output=T>
+    + Fma 
+    + SimdElement,
+
+    Simd<T, N_ROWS_PER_CHUNK>: SimdFloat<Scalar=T> 
+        + AddAssign
+        + Mul<Output = Simd<T, N_ROWS_PER_CHUNK>> 
+        + Fma,
+{
+    let (n_rows, n_cols) = a.dimension(); 
+    assert_eq!(n_rows, n_cols, "matrix a must be square nxn to be triangular"); 
+    assert_length_eq_n_cols!(a, x);
+
+    let n = n_cols; 
+    let a_slice = a.as_slice(); 
+    let x_slice = x.as_slice_mut();
+
+    for j in 0..n_cols { 
+        let xj = x_slice[j]; 
+
+        let acol = &a_slice[j * n..j * (n + 1)]; 
+        let xcol = &mut x_slice[..j];
+
+        axpy( 
+            xj, 
+            VecRef::new(acol), 
+            VecMut::new(xcol), 
+        ); 
+
+        x_slice[j] *= a_slice[j * n + j]; 
+    }
+
+}
 
 /// triangular matrix-vector multiply 
 ///
@@ -143,7 +175,12 @@ where
         + Fma,
 { 
    match uplo { 
-        Triangular::Upper => unimplemented!(), 
+        Triangular::Upper => { 
+            match trans { 
+                Transpose::NoTranspose => trmv_un(a, x), 
+                Transpose::Transpose   => unimplemented!(), 
+            }
+        }, 
         Triangular::Lower => { 
             match trans { 
                 Transpose::NoTranspose => trmv_ln(a, x), 
