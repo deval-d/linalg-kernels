@@ -9,12 +9,12 @@ use crate::traits::Fma;
 pub(crate) const N_ROWS_PER_CHUNK: usize = 16; 
 
 /// a kernel for handling full rectangular
-/// column panels in trmv routines 
+/// column panels in trmv no-transpose routines 
 ///
 /// "fuses" four columns ops together to reduce 
 /// loads and stores of x
 #[allow(clippy::too_many_arguments)]
-pub(crate) fn ftrmv<T>( 
+pub(crate) fn ftrmv_n<T>( 
     col0: &[T], 
     col1: &[T], 
     col2: &[T], 
