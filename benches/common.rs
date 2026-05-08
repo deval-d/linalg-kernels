@@ -19,6 +19,7 @@ pub const MATRIX_SIZES: &[usize] = &[
 /// * beta: [u32] - exponent of n 
 /// * gamma: [usize] - scalar multiplier in front of n 
 /// * n: [usize] - length of vector(s)
+#[allow(dead_code)]
 pub fn bytes_count_f32(
     alpha: f32, 
     beta: i32,
@@ -34,6 +35,7 @@ pub fn bytes_count_f32(
 /// * beta: [u32] - exponent of n 
 /// * gamma: [usize] - scalar multiplier in front of n 
 /// * n: [usize] - length of vector(s)
+#[allow(dead_code)]
 pub fn flops_count( 
     alpha: usize, 
     beta: u32, 
