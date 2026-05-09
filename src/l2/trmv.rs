@@ -11,6 +11,7 @@ use crate::assert_length_eq_n_cols;
 use crate::fused::ftrmv::N_ROWS_PER_CHUNK; 
 
 use crate::l1::axpy::axpy; 
+use crate::l1::dot::{dot, LANES};  
 use crate::types::{MatRef, VecRef, VecMut}; 
 use crate::types::{Triangular, Transpose}; 
 
@@ -26,12 +27,12 @@ pub(crate) fn trmv_ln<T>(
 ) 
 where 
     T: Copy 
-    + AddAssign 
-    + MulAssign
-    + Mul<Output=T>
-    + Add<Output=T>
-    + Fma 
-    + SimdElement,
+        + AddAssign 
+        + MulAssign
+        + Mul<Output=T>
+        + Add<Output=T>
+        + Fma 
+        + SimdElement,
 
     Simd<T, N_ROWS_PER_CHUNK>: SimdFloat<Scalar=T> 
         + AddAssign
@@ -108,12 +109,12 @@ pub(crate) fn trmv_un<T>(
 )
 where 
     T: Copy 
-    + AddAssign 
-    + MulAssign
-    + Mul<Output=T>
-    + Add<Output=T>
-    + Fma 
-    + SimdElement,
+        + AddAssign 
+        + MulAssign
+        + Mul<Output=T>
+        + Add<Output=T>
+        + Fma 
+        + SimdElement,
 
     Simd<T, N_ROWS_PER_CHUNK>: SimdFloat<Scalar=T> 
         + AddAssign
@@ -187,6 +188,82 @@ where
     }
 }
 
+/// trmv 
+/// lower-triangular transpose variant 
+pub(crate) fn trmv_lt<T>( 
+    a: MatRef<'_, T>, 
+    mut x: VecMut<'_, T>, 
+)
+where
+    T: SimdElement 
+        + Copy
+        + Default
+        + AddAssign
+        + Mul<Output=T> 
+        + Add<Output=T>
+        + Fma, 
+
+    Simd<T, LANES>: SimdFloat<Scalar=T> 
+        + AddAssign
+        + Fma, 
+{ 
+    let (n_rows, n_cols) = a.dimension(); 
+    assert_eq!(n_rows, n_cols, "matrix a must be square nxn to be triangular"); 
+    assert_length_eq_n_cols!(a, x);
+
+    let n = n_cols; 
+    let a_slice = a.as_slice(); 
+    let x_slice = x.as_slice_mut(); 
+
+    for j in 0..n { 
+        let xv = &x_slice[j..]; 
+        let av = &a_slice[j * (n + 1)..(j + 1) * n]; 
+
+        x_slice[j] = dot( 
+            VecRef::new(xv), 
+            VecRef::new(av), 
+        ); 
+    }
+}
+
+/// trmv 
+/// upper-triangular transpose variant 
+pub(crate) fn trmv_ut<T>( 
+    a: MatRef<'_, T>, 
+    mut x: VecMut<'_, T>, 
+)
+where
+    T: SimdElement 
+        + Copy
+        + Default
+        + AddAssign
+        + Mul<Output=T> 
+        + Add<Output=T>
+        + Fma, 
+
+    Simd<T, LANES>: SimdFloat<Scalar=T> 
+        + AddAssign
+        + Fma, 
+{ 
+    let (n_rows, n_cols) = a.dimension(); 
+    assert_eq!(n_rows, n_cols, "matrix a must be square nxn to be triangular"); 
+    assert_length_eq_n_cols!(a, x);
+
+    let n = n_rows; 
+    let a_slice = a.as_slice(); 
+    let x_slice = x.as_slice_mut(); 
+
+    for j in (0..n).rev() { 
+        let xv = &x_slice[..j + 1]; 
+        let av = &a_slice[j * n..j * (n + 1) + 1]; 
+
+        x_slice[j] = dot( 
+            VecRef::new(xv), 
+            VecRef::new(av), 
+        ); 
+    }       
+}
+
 /// triangular matrix-vector multiply 
 ///
 /// x <- A * x, A triangular 
@@ -209,24 +286,29 @@ where
     + Mul<Output=T>
     + Add<Output=T>
     + Fma
-    + SimdElement,
+    + SimdElement
+    + Default,
 
     Simd<T, N_ROWS_PER_CHUNK>: SimdFloat<Scalar=T> 
         + AddAssign
         + Mul<Output = Simd<T, N_ROWS_PER_CHUNK>> 
         + Fma,
+
+    Simd<T, LANES>: SimdFloat<Scalar=T> 
+        + AddAssign
+        + Fma, 
 { 
    match uplo { 
         Triangular::Upper => { 
             match trans { 
                 Transpose::NoTranspose => trmv_un(a, x), 
-                Transpose::Transpose   => unimplemented!(), 
+                Transpose::Transpose   => trmv_ut(a, x), 
             }
         }, 
         Triangular::Lower => { 
             match trans { 
                 Transpose::NoTranspose => trmv_ln(a, x), 
-                Transpose::Transpose   => unimplemented!(), 
+                Transpose::Transpose   => trmv_lt(a, x), 
             }
         }
    }
