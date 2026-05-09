@@ -36,16 +36,16 @@ pub struct VecMut<'a, T> {
 /// column major 
 #[derive(Clone, Copy, Debug)]
 pub struct MatRef<'a, T> { 
-    dimension: (usize, usize), 
     buffer: &'a [T], 
+    dimension: (usize, usize), 
 }
 
 /// mutable matrix type 
 /// column major 
 #[derive(Debug)]
 pub struct MatMut<'a, T> { 
+    buffer: &'a mut [T],
     dimension: (usize, usize), 
-    buffer: &'a mut [T]
 }
 
 impl<'a, T> VecRef<'a, T> { 
@@ -96,7 +96,7 @@ impl<'a, T> VecMut<'a, T> {
         &self.buffer[range.start..range.end]
     }
 
-    /// accesses internal immutable slice over a given index range 
+    /// accesses internal mutable slice over a given index range 
     pub fn slice_mut(&mut self, range: Range<usize>) -> &mut [T] { 
         &mut self.buffer[range.start..range.end]
     }
@@ -155,7 +155,7 @@ impl<'a, T> MatRef<'a, T> {
         self.dimension.0
     }
 
-    /// accesses matrix number o cols 
+    /// accesses matrix number of cols 
     pub fn n_cols(&self) -> usize { 
         self.dimension.1
     }
@@ -264,7 +264,7 @@ impl<'a, T> MatMut<'a, T> {
         self.dimension.0
     }
 
-    /// accesses matrix number o cols 
+    /// accesses matrix number of cols 
     pub fn n_cols(&self) -> usize { 
         self.dimension.1
     }
