@@ -13,12 +13,8 @@ pub const MATRIX_SIZES: &[usize] = &[
     128, 256, 512, 1024, 2048, 
 ]; 
 
-/// calculates 4 * alpha * n^beta + gamma * n
-/// args: 
-/// * alpha: [usize] - scalar multiplier in front of n^beta
-/// * beta: [u32] - exponent of n 
-/// * gamma: [usize] - scalar multiplier in front of n 
-/// * n: [usize] - length of vector(s)
+/// calculates 4 * (alpha * n^beta + gamma * n)
+/// for single precision
 #[allow(dead_code)]
 pub fn bytes_count_f32(
     alpha: f32, 
@@ -28,6 +24,19 @@ pub fn bytes_count_f32(
 ) -> f32 {
     (std::mem::size_of::<f32>() as f32) * (alpha * n.powi(beta) + gamma * n) 
 }
+
+/// calculates 8 * (alpha * n^beta + gamma * n)
+/// for double precision
+#[allow(dead_code)]
+pub fn bytes_count_f64(
+    alpha: f64, 
+    beta: i32,
+    gamma: f64,
+    n: f64,
+) -> f64 {
+    (std::mem::size_of::<f64>() as f64) * (alpha * n.powi(beta) + gamma * n) 
+}
+
 
 /// calculates alpha * n^beta + gamma * n
 /// args: 
