@@ -53,14 +53,14 @@ pub trait Abs {
 }   
 
 impl Abs for f32 { 
-    /// computes absolute value if [f32]
+    /// computes absolute value of [f32]
     fn abs(self) -> Self { 
         f32::abs(self)
     }
 }
 
 impl Abs for f64 { 
-    /// computes absolute value if [f64]
+    /// computes absolute value of [f64]
     fn abs(self) -> Self { 
         f64::abs(self)
     }
@@ -119,8 +119,8 @@ pub trait TestFloat:
 }
 
 impl TestFloat for f64 {
-    const RTOL: Self = 1e-12;
-    const ATOL: Self = 1e-12;
+    const RTOL: Self = 1e-14;
+    const ATOL: Self = 1e-14;
 }
 
 
