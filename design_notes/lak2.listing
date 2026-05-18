@@ -1,0 +1,28 @@
+pub fn dot<T>(
+    x: VecRef<'_, T>,
+    y: VecRef<'_, T>,
+) -> T
+where
+    T: Default
+        + Copy
+        + Fma
+        + Mul<Output=T>
+        + Add<Output=T>,
+{
+    // ensures buffers have equal length
+    assert_n_eq!(x, y);
+
+    // access stored &[T] buffer;
+    let xdata = x.as_slice();
+    let ydata = y.as_slice();
+
+    // running sum
+    let mut sum = T::default();
+    for (&xi, &yi) in xdata.iter().zip(ydata.iter()) {
+        // dependency chain
+        // sum += xi * yi
+        sum = xi.fma(yi, sum);
+    }
+
+    sum
+}
