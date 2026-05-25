@@ -1,2 +1,2 @@
 pub mod faxpy;
-pub mod ftrmv;
+pub mod ftrmsv;
