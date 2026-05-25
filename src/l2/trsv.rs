@@ -5,7 +5,7 @@ use std::simd::{Simd, SimdElement};
 use std::simd::num::SimdFloat; 
 
 use crate::traits::Fma;
-use crate::types::{MatRef, VecMut, VecRef};
+use crate::types::{MatRef, Transpose, Triangular, VecMut, VecRef};
 use crate::assert_length_eq_n_cols; 
 
 use crate::l2::trmv::N_COLS_PER_CHUNK; 
@@ -97,3 +97,51 @@ where
         }
     }
 }
+
+/// triangular solve 
+///
+/// solves Ax = b; A triangular 
+///
+/// args: 
+/// * uplo: [Triangular] - whether A is lower or upper triangular 
+/// * trans: [Transpose] - whether to use A or A^T 
+/// * a: [MatRef] - triangular matrix A 
+/// * x: [VecMut] - initially `b`; result is solved `x` 
+pub fn trsv<T>( 
+    uplo: Triangular, 
+    trans: Transpose, 
+    a: MatRef<'_, T>, 
+    x: VecMut<'_, T>, 
+)
+where 
+    T: Copy 
+        + AddAssign
+        + SubAssign 
+        + DivAssign
+        + Add<Output=T>
+        + Mul<Output=T>
+        + Neg<Output=T>
+        + SimdElement
+        + Fma,
+
+    Simd<T, N_ROWS_PER_CHUNK>: SimdFloat<Scalar=T> 
+        + AddAssign
+        + Mul<Output = Simd<T, N_ROWS_PER_CHUNK>> 
+        + Fma,
+{ 
+    match uplo { 
+        Triangular::Upper => { 
+            match trans { 
+                Transpose::NoTranspose => unimplemented!(), 
+                Transpose::Transpose   => unimplemented!(), 
+            }
+        }, 
+        Triangular::Lower => { 
+            match trans { 
+                Transpose::NoTranspose => trsv_ln(a, x),
+                Transpose::Transpose   => unimplemented!(), 
+            }
+        }       
+    }
+}
+        
