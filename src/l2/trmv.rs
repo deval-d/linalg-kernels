@@ -266,7 +266,7 @@ where
 
 /// triangular matrix-vector multiply 
 ///
-/// x <- A * x, A triangular 
+/// x <- Ax, A triangular 
 ///
 /// args: 
 /// * uplo: [Triangular] - whether A is lower or upper triangular 
