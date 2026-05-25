@@ -8,14 +8,11 @@ use crate::traits::Fma;
 use crate::types::{MatRef, VecMut, VecRef, Transpose};
 use crate::{assert_length_eq_n_cols, assert_length_eq_n_rows}; 
 
-use crate::l1::{ 
-    scal::scal, 
-    dot::dot, 
-    dot::LANES, 
-}; 
-use crate::fused::faxpy::{faxpy, N_ROWS_PER_CHUNK}; 
-
-pub(crate) const NC: usize = 128; 
+use crate::l1::dot::dot; 
+use crate::l1::scal::scal; 
+use crate::fused::faxpy::faxpy; 
+use crate::l1::dot::LANES; 
+use crate::fused::faxpy::{N_COLS_PER_CHUNK, N_ROWS_PER_CHUNK};
 
 /// no transpose gemv 
 pub(crate) fn gemv_n<T>( 
@@ -42,7 +39,7 @@ where
 
     scal(beta, y.reborrow()); 
 
-    for (cols, a_panel) in a.col_panels(NC) {
+    for (cols, a_panel) in a.col_panels(N_COLS_PER_CHUNK) {
         let x_panel = VecRef::new(x.slice(cols)); 
         faxpy(alpha, a_panel, x_panel, y.reborrow());
     }
@@ -86,7 +83,7 @@ where
 
 /// general matrix-vector multiplication 
 ///
-/// y <- alpha * A * x + beta * y 
+/// y <- alpha * Ax + beta * y 
 ///
 /// args: 
 /// * trans: [Transpose] - whether to use A or A^T 
