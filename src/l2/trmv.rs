@@ -4,11 +4,11 @@ use std::ops::{Add, AddAssign, Mul, MulAssign};
 use std::simd::{Simd, SimdElement}; 
 use std::simd::num::SimdFloat; 
 
-use crate::fused::ftrmv::ftrmv_n;
+use crate::fused::ftrmsv::ftrmsv_n;
 use crate::traits::Fma; 
 use crate::assert_length_eq_n_cols; 
 
-use crate::fused::ftrmv::N_ROWS_PER_CHUNK; 
+use crate::fused::ftrmsv::N_ROWS_PER_CHUNK; 
 
 use crate::l1::axpy::axpy; 
 use crate::l1::dot::{dot, LANES};  
@@ -80,7 +80,7 @@ where
             let x2 = x_slice[j0 + 2]; 
             let x3 = x_slice[j0 + 3]; 
 
-            ftrmv_n( 
+            ftrmsv_n( 
                 c0, c1, c2, c3,
                 x0, x1, x2, x3, 
                 &mut x_slice[j1..n], 
@@ -164,7 +164,7 @@ where
             let x2 = x_slice[j0 + 2]; 
             let x3 = x_slice[j0 + 3]; 
 
-            ftrmv_n( 
+            ftrmsv_n( 
                 c0, c1, c2, c3, 
                 x0, x1, x2, x3, 
                 &mut x_slice[..j0],

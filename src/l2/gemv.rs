@@ -73,14 +73,12 @@ where
     assert_length_eq_n_cols!(a, y); 
     assert_length_eq_n_rows!(a, x); 
 
-    let (n_rows, n_cols) = a.dimension(); 
-    let a_slice = a.as_slice(); 
     scal(beta, y.reborrow()); 
 
     let y_slice = y.as_slice_mut(); 
 
-    for j in 0..n_cols { 
-        let aj = VecRef::new(&a_slice[j * n_rows..(j + 1) * n_rows]); 
+    for j in 0..a.n_cols() { 
+        let aj = a.col(j); 
         y_slice[j] += alpha * dot(aj, x); 
     }
 } 
