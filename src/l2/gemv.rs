@@ -12,7 +12,9 @@ use crate::l1::dot::dot;
 use crate::l1::scal::scal; 
 use crate::fused::faxpy::faxpy; 
 use crate::l1::dot::LANES; 
-use crate::fused::faxpy::{N_COLS_PER_CHUNK, N_ROWS_PER_CHUNK};
+use crate::fused::faxpy::N_ROWS_PER_CHUNK;
+
+pub(crate) const N_COLS_PER_PANEL: usize = 128; 
 
 /// no transpose gemv 
 pub(crate) fn gemv_n<T>( 
@@ -39,7 +41,7 @@ where
 
     scal(beta, y.reborrow()); 
 
-    for (cols, a_panel) in a.col_panels(N_COLS_PER_CHUNK) {
+    for (cols, a_panel) in a.col_panels(N_COLS_PER_PANEL) {
         let x_panel = VecRef::new(x.slice(cols)); 
         faxpy(alpha, a_panel, x_panel, y.reborrow());
     }
