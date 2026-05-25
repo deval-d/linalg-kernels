@@ -479,6 +479,10 @@ fn blas_strmv_ut(bencher: Bencher, n: usize) {
         }); 
 }
 
+
+// trsv \\ 
+
+
 #[divan::bench(args = MATRIX_SIZES)]
 fn lak_strsv_ln(bencher: Bencher, n: usize) {
     let rng = &mut bench_rng(3);
@@ -703,12 +707,3 @@ fn blas_strsv_ut(bencher: Bencher, n: usize) {
             black_box(&xbuf);
         });
 }
-
-        
-
-
-
-
-
-
-

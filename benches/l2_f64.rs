@@ -4,13 +4,14 @@ use common::{bench_rng, bytes_count_f64, flops_count, MATRIX_SIZES};
 
 use blas_src as _; 
 use cblas_sys::{ 
-    cblas_dgemv, cblas_dger, cblas_dtrmv, 
+    cblas_dgemv, cblas_dger, cblas_dtrmv, cblas_dtrsv, 
 };
 
-use lak::helpers::make_vec_random;
+use lak::helpers::{make_behaved_mat_dd_f64, make_vec_random};
 use lak::l2::gemv::gemv;
 use lak::l2::ger::ger;
 use lak::l2::trmv::trmv;
+use lak::l2::trsv::trsv;
 use lak::types::{MatMut, MatRef, Transpose, Triangular, VecMut, VecRef};
 
 use divan::counter::{BytesCount, ItemsCount};
@@ -41,7 +42,7 @@ fn lak_dgemv_n(bencher: Bencher, n: usize) {
         .counter(BytesCount::new(bytes_count_f64(1.0, 2, 3.0, n as f64) as u64))
         .counter(ItemsCount::new(flops_count(2, 2, 3, n) as u64))
         .bench_local(|| {
-            // for n = 2048 this is only 16 KB, while A is 32 MB
+            // for n = 2048 this is only 8 KB, while A is 16 MB
             // does not meaningfully change the gemv timing.
             ybuf.copy_from_slice(&y_init);
 
@@ -119,7 +120,7 @@ fn lak_dgemv_t(bencher: Bencher, n: usize) {
         .counter(BytesCount::new(bytes_count_f64(1.0, 2, 3.0, n as f64) as u64))
         .counter(ItemsCount::new(flops_count(2, 2, 3, n) as u64))
         .bench_local(|| {
-            // for n = 2048 this is only 16 KB, while A is 32 MB
+            // for n = 2048 this is only 8 KB, while a is 16 MB
             // does not meaningfully change the gemv timing.
             ybuf.copy_from_slice(&y_init);
 
@@ -302,6 +303,7 @@ fn blas_dtrmv_ln(bencher: Bencher, n: usize) {
                     xbuf.as_mut_ptr(), 
                     1 as i32,
                 ) 
+
             }
 
             black_box(&xbuf);
@@ -357,6 +359,7 @@ fn blas_dtrmv_un(bencher: Bencher, n: usize) {
                     xbuf.as_mut_ptr(), 
                     1 as i32,
                 ) 
+
             }
 
             black_box(&xbuf);
@@ -412,6 +415,7 @@ fn blas_dtrmv_lt(bencher: Bencher, n: usize) {
                     xbuf.as_mut_ptr(), 
                     1 as i32,
                 ) 
+
             }
 
             black_box(&xbuf);
@@ -467,8 +471,239 @@ fn blas_dtrmv_ut(bencher: Bencher, n: usize) {
                     xbuf.as_mut_ptr(), 
                     1 as i32,
                 ) 
+
             }
 
             black_box(&xbuf);
+
         }); 
+}
+
+
+// trsv \\ 
+
+
+#[divan::bench(args = MATRIX_SIZES)]
+fn lak_dtrsv_ln(bencher: Bencher, n: usize) {
+    let rng = &mut bench_rng(3);
+
+    let mut xbuf: Vec<f64> = make_vec_random(n, rng);
+    let xbuf_init = xbuf.clone();
+    let abuf: Vec<f64> = make_behaved_mat_dd_f64(n, rng);
+
+    bencher
+        .counter(BytesCount::new(bytes_count_f64(1.5, 2, 1.5, n as f64) as u64))
+        .counter(ItemsCount::new(flops_count(1, 2, 0, n) as u64))
+        .bench_local(|| {
+            xbuf.copy_from_slice(&xbuf_init);
+
+            let a = MatRef::new(&abuf, (n, n)); 
+            let x = VecMut::new(&mut xbuf); 
+
+            trsv(Triangular::Lower, Transpose::NoTranspose, a, x); 
+
+            black_box(&xbuf);
+        });
+}
+
+#[divan::bench(args = MATRIX_SIZES)]
+fn blas_dtrsv_ln(bencher: Bencher, n: usize) {
+    let rng = &mut bench_rng(3);
+
+    let mut xbuf: Vec<f64> = make_vec_random(n, rng);
+    let xbuf_init = xbuf.clone();
+    let abuf: Vec<f64> = make_behaved_mat_dd_f64(n, rng);
+
+    bencher
+        .counter(BytesCount::new(bytes_count_f64(1.5, 2, 1.5, n as f64) as u64))
+        .counter(ItemsCount::new(flops_count(1, 2, 0, n) as u64))
+        .bench_local(|| {
+            xbuf.copy_from_slice(&xbuf_init);
+
+            unsafe { 
+                cblas_dtrsv( 
+                    cblas_sys::CBLAS_LAYOUT::CblasColMajor,
+                    cblas_sys::CBLAS_UPLO::CblasLower, 
+                    cblas_sys::CBLAS_TRANSPOSE::CblasNoTrans, 
+                    cblas_sys::CBLAS_DIAG::CblasNonUnit, 
+                    n as i32, 
+                    abuf.as_ptr(), 
+                    n as i32, 
+                    xbuf.as_mut_ptr(), 
+                    1 as i32,
+                ) 
+
+            }
+
+            black_box(&xbuf);
+        });
+}
+
+#[divan::bench(args = MATRIX_SIZES)]
+fn lak_dtrsv_un(bencher: Bencher, n: usize) {
+    let rng = &mut bench_rng(3);
+
+    let mut xbuf: Vec<f64> = make_vec_random(n, rng);
+    let xbuf_init = xbuf.clone();
+    let abuf: Vec<f64> = make_behaved_mat_dd_f64(n, rng);
+
+    bencher
+        .counter(BytesCount::new(bytes_count_f64(1.5, 2, 1.5, n as f64) as u64))
+        .counter(ItemsCount::new(flops_count(1, 2, 0, n) as u64))
+        .bench_local(|| {
+            xbuf.copy_from_slice(&xbuf_init);
+
+            let a = MatRef::new(&abuf, (n, n)); 
+            let x = VecMut::new(&mut xbuf); 
+
+            trsv(Triangular::Upper, Transpose::NoTranspose, a, x); 
+
+            black_box(&xbuf);
+        });
+}
+
+#[divan::bench(args = MATRIX_SIZES)]
+fn blas_dtrsv_un(bencher: Bencher, n: usize) {
+    let rng = &mut bench_rng(3);
+
+    let mut xbuf: Vec<f64> = make_vec_random(n, rng);
+    let xbuf_init = xbuf.clone();
+    let abuf: Vec<f64> = make_behaved_mat_dd_f64(n, rng);
+
+    bencher
+        .counter(BytesCount::new(bytes_count_f64(1.5, 2, 1.5, n as f64) as u64))
+        .counter(ItemsCount::new(flops_count(1, 2, 0, n) as u64))
+        .bench_local(|| {
+            xbuf.copy_from_slice(&xbuf_init);
+
+            unsafe { 
+                cblas_dtrsv( 
+                    cblas_sys::CBLAS_LAYOUT::CblasColMajor,
+                    cblas_sys::CBLAS_UPLO::CblasUpper, 
+                    cblas_sys::CBLAS_TRANSPOSE::CblasNoTrans, 
+                    cblas_sys::CBLAS_DIAG::CblasNonUnit, 
+                    n as i32, 
+                    abuf.as_ptr(), 
+                    n as i32, 
+                    xbuf.as_mut_ptr(), 
+                    1 as i32,
+                ) 
+
+            }
+
+            black_box(&xbuf);
+        });
+}
+
+#[divan::bench(args = MATRIX_SIZES)]
+fn lak_dtrsv_lt(bencher: Bencher, n: usize) {
+    let rng = &mut bench_rng(3);
+
+    let mut xbuf: Vec<f64> = make_vec_random(n, rng);
+    let xbuf_init = xbuf.clone();
+    let abuf: Vec<f64> = make_behaved_mat_dd_f64(n, rng);
+
+    bencher
+        .counter(BytesCount::new(bytes_count_f64(1.5, 2, 1.5, n as f64) as u64))
+        .counter(ItemsCount::new(flops_count(1, 2, 0, n) as u64))
+        .bench_local(|| {
+            xbuf.copy_from_slice(&xbuf_init);
+
+            let a = MatRef::new(&abuf, (n, n)); 
+            let x = VecMut::new(&mut xbuf); 
+
+            trsv(Triangular::Lower, Transpose::Transpose, a, x); 
+
+            black_box(&xbuf);
+        });
+}
+
+#[divan::bench(args = MATRIX_SIZES)]
+fn blas_dtrsv_lt(bencher: Bencher, n: usize) {
+    let rng = &mut bench_rng(3);
+
+    let mut xbuf: Vec<f64> = make_vec_random(n, rng);
+    let xbuf_init = xbuf.clone();
+    let abuf: Vec<f64> = make_behaved_mat_dd_f64(n, rng);
+
+    bencher
+        .counter(BytesCount::new(bytes_count_f64(1.5, 2, 1.5, n as f64) as u64))
+        .counter(ItemsCount::new(flops_count(1, 2, 0, n) as u64))
+        .bench_local(|| {
+            xbuf.copy_from_slice(&xbuf_init);
+
+            unsafe { 
+                cblas_dtrsv( 
+                    cblas_sys::CBLAS_LAYOUT::CblasColMajor,
+                    cblas_sys::CBLAS_UPLO::CblasLower, 
+                    cblas_sys::CBLAS_TRANSPOSE::CblasTrans, 
+                    cblas_sys::CBLAS_DIAG::CblasNonUnit, 
+                    n as i32, 
+                    abuf.as_ptr(), 
+                    n as i32, 
+                    xbuf.as_mut_ptr(), 
+                    1 as i32,
+                ) 
+
+            }
+
+            black_box(&xbuf);
+        });
+}
+
+
+#[divan::bench(args = MATRIX_SIZES)]
+fn lak_dtrsv_ut(bencher: Bencher, n: usize) {
+    let rng = &mut bench_rng(3);
+
+    let mut xbuf: Vec<f64> = make_vec_random(n, rng);
+    let xbuf_init = xbuf.clone();
+    let abuf: Vec<f64> = make_behaved_mat_dd_f64(n, rng);
+
+    bencher
+        .counter(BytesCount::new(bytes_count_f64(1.5, 2, 1.5, n as f64) as u64))
+        .counter(ItemsCount::new(flops_count(1, 2, 0, n) as u64))
+        .bench_local(|| {
+            xbuf.copy_from_slice(&xbuf_init);
+
+            let a = MatRef::new(&abuf, (n, n)); 
+            let x = VecMut::new(&mut xbuf); 
+
+            trsv(Triangular::Upper, Transpose::Transpose, a, x); 
+
+            black_box(&xbuf);
+        });
+}
+
+#[divan::bench(args = MATRIX_SIZES)]
+fn blas_dtrsv_ut(bencher: Bencher, n: usize) {
+    let rng = &mut bench_rng(3);
+
+    let mut xbuf: Vec<f64> = make_vec_random(n, rng);
+    let xbuf_init = xbuf.clone();
+    let abuf: Vec<f64> = make_behaved_mat_dd_f64(n, rng);
+
+    bencher
+        .counter(BytesCount::new(bytes_count_f64(1.5, 2, 1.5, n as f64) as u64))
+        .counter(ItemsCount::new(flops_count(1, 2, 0, n) as u64))
+        .bench_local(|| {
+            xbuf.copy_from_slice(&xbuf_init);
+
+            unsafe { 
+                cblas_dtrsv( 
+                    cblas_sys::CBLAS_LAYOUT::CblasColMajor,
+                    cblas_sys::CBLAS_UPLO::CblasUpper, 
+                    cblas_sys::CBLAS_TRANSPOSE::CblasTrans, 
+                    cblas_sys::CBLAS_DIAG::CblasNonUnit, 
+                    n as i32, 
+                    abuf.as_ptr(), 
+                    n as i32, 
+                    xbuf.as_mut_ptr(), 
+                    1 as i32,
+                ) 
+
+            }
+
+            black_box(&xbuf);
+        });
 }
