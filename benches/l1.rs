@@ -31,9 +31,9 @@ fn main() {
     divan::main();
 }
 
-// **** //
-// ASUM // 
-// **** //
+
+// asum \\
+
 
 #[divan::bench(args = SIZES)]
 pub fn lak_sasum(bencher: Bencher, n: usize) {
@@ -64,9 +64,9 @@ fn blas_sasum(bencher: Bencher, n: usize) {
         });
 }
 
-// **** //
-// AXPY // 
-// **** //
+
+// axpy \\
+
 
 #[divan::bench(args = SIZES)]
 pub fn lak_saxpy(bencher: Bencher, n: usize) {
@@ -106,9 +106,9 @@ fn blas_saxpy(bencher: Bencher, n: usize) {
         });
 }
 
-// **** //
-// COPY // 
-// **** //
+
+// copy \\ 
+
 
 #[divan::bench(args = SIZES)]
 pub fn lak_scopy(bencher: Bencher, n: usize) {
@@ -147,9 +147,9 @@ fn blas_scopy(bencher: Bencher, n: usize) {
         });
 }
 
-// **** //
-// DOT // 
-// **** //
+
+// dot \\ 
+
 
 #[divan::bench(args = SIZES)]
 pub fn lak_sdot(bencher: Bencher, n: usize) {
@@ -188,9 +188,9 @@ fn blas_sdot(bencher: Bencher, n: usize) {
         });
 }
 
-// **** //
-// IAMAX // 
-// **** //
+
+// iamax \\  
+
 
 #[divan::bench(args = SIZES)]
 pub fn lak_isamax(bencher: Bencher, n: usize) {
@@ -223,9 +223,9 @@ fn blas_isamax(bencher: Bencher, n: usize) {
         });
 }
 
-// **** //
-// NRM2 // 
-// **** //
+
+// nrm2 \\  
+
 
 #[divan::bench(args = SIZES)]
 pub fn lak_snrm2(bencher: Bencher, n: usize) {
@@ -258,9 +258,9 @@ fn blas_snrm2(bencher: Bencher, n: usize) {
         });
 } 
 
-// **** //
-// SCAL // 
-// **** //
+
+// scal \\ 
+
 
 #[divan::bench(args = SIZES)]
 pub fn lak_sscal(bencher: Bencher, n: usize) {
@@ -294,9 +294,9 @@ fn blas_sscal(bencher: Bencher, n: usize) {
         });
 }
 
-// **** //
-// SWAP // 
-// **** //
+
+// swap \\  
+
 
 #[divan::bench(args = SIZES)]
 pub fn lak_sswap(bencher: Bencher, n: usize) {

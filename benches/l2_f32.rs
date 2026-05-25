@@ -1,6 +1,5 @@
 mod common; 
-
-use common::{bench_rng, bytes_count_f32, flops_count, MATRIX_SIZES}; 
+use common::{bench_rng, bytes_count_f32, flops_count, MATRIX_SIZES_L2 as MATRIX_SIZES}; 
 
 use blas_src as _; 
 use cblas_sys::{ 
@@ -8,11 +7,12 @@ use cblas_sys::{
 };
 
 use lak::helpers::{make_behaved_mat_dd_f32, make_vec_random};
+use lak::types::{MatMut, MatRef, Transpose, Triangular, VecMut, VecRef};
+
 use lak::l2::gemv::gemv;
 use lak::l2::ger::ger;
 use lak::l2::trmv::trmv;
 use lak::l2::trsv::trsv;
-use lak::types::{MatMut, MatRef, Transpose, Triangular, VecMut, VecRef};
 
 use divan::counter::{BytesCount, ItemsCount};
 use divan::{black_box, Bencher};

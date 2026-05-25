@@ -27,3 +27,6 @@ harness = false
 name = "l2_f64" 
 harness = false
 
+[[bench]] 
+name = "l3_f32" 
+harness = false 
