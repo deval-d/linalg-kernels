@@ -4,13 +4,14 @@ use common::{bench_rng, bytes_count_f32, flops_count, MATRIX_SIZES};
 
 use blas_src as _; 
 use cblas_sys::{ 
-    cblas_sgemv, cblas_sger, cblas_strmv, 
+    cblas_sgemv, cblas_sger, cblas_strmv, cblas_strsv, 
 };
 
-use lak::helpers::make_vec_random;
+use lak::helpers::{make_behaved_mat_dd_f32, make_vec_random};
 use lak::l2::gemv::gemv;
 use lak::l2::ger::ger;
 use lak::l2::trmv::trmv;
+use lak::l2::trsv::trsv;
 use lak::types::{MatMut, MatRef, Transpose, Triangular, VecMut, VecRef};
 
 use divan::counter::{BytesCount, ItemsCount};
@@ -476,6 +477,62 @@ fn blas_strmv_ut(bencher: Bencher, n: usize) {
             black_box(&xbuf);
 
         }); 
+}
+
+#[divan::bench(args = MATRIX_SIZES)]
+fn lak_strsv_ln(bencher: Bencher, n: usize) {
+    let rng = &mut bench_rng(3);
+
+    let mut xbuf: Vec<f32> = make_vec_random(n, rng);
+    let xbuf_init = xbuf.clone();
+    let abuf: Vec<f32> = make_behaved_mat_dd_f32(n, rng);
+
+    bencher
+        .counter(BytesCount::new(bytes_count_f32(1.5, 2, 1.5, n as f32) as u64))
+        .counter(ItemsCount::new(flops_count(1, 2, 0, n) as u64))
+        .bench_local(|| {
+            xbuf.copy_from_slice(&xbuf_init);
+
+            let a = MatRef::new(&abuf, (n, n)); 
+            let x = VecMut::new(&mut xbuf); 
+
+            trsv(Triangular::Lower, Transpose::NoTranspose, a, x); 
+
+            black_box(&xbuf);
+        });
+}
+
+#[divan::bench(args = MATRIX_SIZES)]
+fn blas_strsv_ln(bencher: Bencher, n: usize) {
+    let rng = &mut bench_rng(3);
+
+    let mut xbuf: Vec<f32> = make_vec_random(n, rng);
+    let xbuf_init = xbuf.clone();
+    let abuf: Vec<f32> = make_behaved_mat_dd_f32(n, rng);
+
+    bencher
+        .counter(BytesCount::new(bytes_count_f32(1.5, 2, 1.5, n as f32) as u64))
+        .counter(ItemsCount::new(flops_count(1, 2, 0, n) as u64))
+        .bench_local(|| {
+            xbuf.copy_from_slice(&xbuf_init);
+
+            unsafe { 
+                cblas_strsv( 
+                    cblas_sys::CBLAS_LAYOUT::CblasColMajor,
+                    cblas_sys::CBLAS_UPLO::CblasLower, 
+                    cblas_sys::CBLAS_TRANSPOSE::CblasNoTrans, 
+                    cblas_sys::CBLAS_DIAG::CblasNonUnit, 
+                    n as i32, 
+                    abuf.as_ptr(), 
+                    n as i32, 
+                    xbuf.as_mut_ptr(), 
+                    1 as i32,
+                ) 
+
+            }
+
+            black_box(&xbuf);
+        });
 }
         
 
