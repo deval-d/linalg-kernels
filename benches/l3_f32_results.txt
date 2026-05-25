@@ -1,0 +1,46 @@
+l3_f32            fastest       │ slowest       │ median        │ mean          │ samples │ iters
+├─ blas_sgemm_nn                │               │               │               │         │
+│  ├─ 16          374.5 ns      │ 31.16 µs      │ 416.5 ns      │ 732.9 ns      │ 100     │ 100
+│  │              5.639 GB/s    │ 67.76 MB/s    │ 5.07 GB/s     │ 2.881 GB/s    │         │
+│  │              21.87 Gitem/s │ 262.8 Mitem/s │ 19.66 Gitem/s │ 11.17 Gitem/s │         │
+│  ├─ 32          1.416 µs      │ 4.114 µs      │ 1.447 µs      │ 1.48 µs       │ 100     │ 400
+│  │              5.875 GB/s    │ 2.022 GB/s    │ 5.747 GB/s    │ 5.618 GB/s    │         │
+│  │              46.28 Gitem/s │ 15.92 Gitem/s │ 45.27 Gitem/s │ 44.25 Gitem/s │         │
+│  ├─ 64          25.7 µs       │ 39.16 µs      │ 25.87 µs      │ 26.1 µs       │ 100     │ 100
+│  │              1.284 GB/s    │ 843.1 MB/s    │ 1.276 GB/s    │ 1.265 GB/s    │         │
+│  │              20.39 Gitem/s │ 13.38 Gitem/s │ 20.26 Gitem/s │ 20.08 Gitem/s │         │
+│  ├─ 128         109.7 µs      │ 125.7 µs      │ 110.2 µs      │ 110.8 µs      │ 100     │ 100
+│  │              1.199 GB/s    │ 1.046 GB/s    │ 1.193 GB/s    │ 1.187 GB/s    │         │
+│  │              38.23 Gitem/s │ 33.36 Gitem/s │ 38.02 Gitem/s │ 37.85 Gitem/s │         │
+│  ├─ 256         661.7 µs      │ 690.7 µs      │ 664.7 µs      │ 666.5 µs      │ 100     │ 100
+│  │              793.8 MB/s    │ 760.5 MB/s    │ 790.2 MB/s    │ 788 MB/s      │         │
+│  │              50.7 Gitem/s  │ 48.57 Gitem/s │ 50.47 Gitem/s │ 50.33 Gitem/s │         │
+│  ├─ 384         2.072 ms      │ 2.115 ms      │ 2.077 ms      │ 2.081 ms      │ 100     │ 100
+│  │              570 MB/s      │ 558.2 MB/s    │ 568.4 MB/s    │ 567.4 MB/s    │         │
+│  │              54.65 Gitem/s │ 53.52 Gitem/s │ 54.49 Gitem/s │ 54.4 Gitem/s  │         │
+│  ╰─ 512         4.784 ms      │ 4.844 ms      │ 4.796 ms      │ 4.798 ms      │ 100     │ 100
+│                 438.7 MB/s    │ 433.3 MB/s    │ 437.6 MB/s    │ 437.4 MB/s    │         │
+│                 56.09 Gitem/s │ 55.41 Gitem/s │ 55.96 Gitem/s │ 55.94 Gitem/s │         │
+╰─ lak_sgemm_nn                 │               │               │               │         │
+   ├─ 16          1.03 µs       │ 1.083 µs      │ 1.051 µs      │ 1.055 µs      │ 100     │ 400
+   │              2.048 GB/s    │ 1.95 GB/s     │ 2.008 GB/s    │ 2.001 GB/s    │         │
+   │              7.947 Gitem/s │ 7.563 Gitem/s │ 7.788 Gitem/s │ 7.762 Gitem/s │         │
+   ├─ 32          6.582 µs      │ 7.04 µs       │ 6.708 µs      │ 6.727 µs      │ 100     │ 100
+   │              1.263 GB/s    │ 1.181 GB/s    │ 1.24 GB/s     │ 1.236 GB/s    │         │
+   │              9.956 Gitem/s │ 9.308 Gitem/s │ 9.769 Gitem/s │ 9.742 Gitem/s │         │
+   ├─ 64          22.08 µs      │ 29.41 µs      │ 23.54 µs      │ 23.48 µs      │ 100     │ 100
+   │              1.495 GB/s    │ 1.122 GB/s    │ 1.402 GB/s    │ 1.406 GB/s    │         │
+   │              23.74 Gitem/s │ 17.82 Gitem/s │ 22.27 Gitem/s │ 22.32 Gitem/s │         │
+   ├─ 128         135.8 µs      │ 154.6 µs      │ 139.2 µs      │ 139.7 µs      │ 100     │ 100
+   │              968.4 MB/s    │ 850.7 MB/s    │ 944.9 MB/s    │ 941.5 MB/s    │         │
+   │              30.86 Gitem/s │ 27.11 Gitem/s │ 30.12 Gitem/s │ 30.01 Gitem/s │         │
+   ├─ 256         1.231 ms      │ 1.264 ms      │ 1.24 ms       │ 1.241 ms      │ 100     │ 100
+   │              426.6 MB/s    │ 415.3 MB/s    │ 423.5 MB/s    │ 423 MB/s      │         │
+   │              27.25 Gitem/s │ 26.52 Gitem/s │ 27.05 Gitem/s │ 27.02 Gitem/s │         │
+   ├─ 384         4.052 ms      │ 4.096 ms      │ 4.064 ms      │ 4.065 ms      │ 100     │ 100
+   │              291.4 MB/s    │ 288.3 MB/s    │ 290.6 MB/s    │ 290.5 MB/s    │         │
+   │              27.94 Gitem/s │ 27.64 Gitem/s │ 27.86 Gitem/s │ 27.85 Gitem/s │         │
+   ╰─ 512         9.514 ms      │ 9.573 ms      │ 9.547 ms      │ 9.547 ms      │ 100     │ 100
+                  220.6 MB/s    │ 219.2 MB/s    │ 219.8 MB/s    │ 219.8 MB/s    │         │
+                  28.21 Gitem/s │ 28.04 Gitem/s │ 28.11 Gitem/s │ 28.11 Gitem/s │         │
+
