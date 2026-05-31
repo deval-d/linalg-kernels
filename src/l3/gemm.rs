@@ -1,14 +1,15 @@
 // gemm.rs 
-
-use std::ops::{AddAssign, Mul, MulAssign}; 
+//
 use std::simd::num::SimdFloat;
 use std::simd::{Simd, SimdElement};
+use std::ops::{AddAssign, Mul, MulAssign}; 
+
 
 use crate::traits::Fma; 
-use crate::types::{MatMut, MatRef, Transpose}; 
-
 use crate::fused::faxpy::N_ROWS_PER_CHUNK; 
+use crate::types::{MatMut,MatRef, Transpose}; 
 
+use crate::l3::microkernel::MR; 
 use crate::l3::gemm_nn::gemm_nn; 
 
 
@@ -44,7 +45,9 @@ where
     Simd<T, N_ROWS_PER_CHUNK>: SimdFloat<Scalar=T> 
         + AddAssign
         + Mul<Output=Simd<T, N_ROWS_PER_CHUNK>> 
-        + Fma, 
+        + Fma,
+
+    Simd<T, MR>: Fma, 
 { 
     match atrans { 
         Transpose::NoTranspose => { 

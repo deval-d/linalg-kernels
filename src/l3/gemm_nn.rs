@@ -1,15 +1,20 @@
-// gemm_nn.rs 
+// gemm_nn.rs
 
-use std::ops::{AddAssign, Mul, MulAssign};
 use std::simd::num::SimdFloat;
 use std::simd::{Simd, SimdElement};
+use std::ops::{AddAssign, Mul, MulAssign};
 
 use crate::l1::scal;
-use crate::types::{MatMut, MatRef, VecRef}; 
-use crate::traits::Fma; 
+use crate::traits::Fma;
+use crate::types::{MatRef, MatMut};
+use crate::fused::faxpy::N_ROWS_PER_CHUNK; 
+use crate::l3::microkernel::{ 
+    MR, 
+    microkernel, 
+}; 
 
-use crate::fused::faxpy::{N_COLS_PER_CHUNK, N_ROWS_PER_CHUNK}; 
-use crate::fused::faxpy::faxpy; 
+pub(crate) const NC: usize = 64; 
+pub(crate) const KC: usize = 64; 
 
 pub(crate) fn gemm_nn<T>( 
     alpha: T, 
@@ -19,42 +24,50 @@ pub(crate) fn gemm_nn<T>(
     mut c: MatMut<'_, T>, 
 ) 
 where 
-    T: SimdElement 
-        + AddAssign<T>
+    T: SimdElement
+        + Copy 
+        + AddAssign
         + MulAssign
         + Mul<Output=T>
-        + Copy
-        + Fma, 
+        + Fma,
+
+    Simd<T, MR>: Fma, 
 
     Simd<T, N_ROWS_PER_CHUNK>: SimdFloat<Scalar=T> 
         + AddAssign
-        + Mul<Output=Simd<T, N_ROWS_PER_CHUNK>> 
-        + Fma, 
+        + Mul<Output = Simd<T, N_ROWS_PER_CHUNK>> 
+        + Fma,
 { 
-    let (m, n) = a.dimension(); 
-    let (o, p) = b.dimension(); 
-    let (q, r) = c.dimension(); 
+    let k_a = a.n_cols(); 
+    let (k_b, n) = b.dimension(); 
+    let k = { 
+        assert_eq!(k_a, k_b, "A and B inner dimension k must match"); 
+        k_a 
+    }; 
 
-    assert_eq!(n, o, "A and B dimensions don't match for AB"); 
-    assert_eq!(m, q, "AB and C dimensions don't match for AB + C"); 
-    assert_eq!(p, r, "AB and C dimensions don't match for AB + C"); 
+    let num_nc = n.div_ceil(NC); 
+    let num_kc = k.div_ceil(KC); 
+    
+    for nc_idx in 0..num_nc { 
+        let j0 = nc_idx * NC; 
+        let j1 = (j0 + NC).min(n); 
 
-    // (m x k) * (k x n) 
-    let k = n; 
-    let n = p; 
+        let mut c_panel = c.col_panel_mut(j0..j1); 
+        let b_panel = b.col_panel(j0..j1); 
+        
+        for j in 0..c_panel.n_cols() { 
+            scal(beta, c_panel.col_mut(j)); 
+        }
 
-    for j in 0..n { 
-        let c_col = c.col_mut(j); 
-        scal(beta, c_col);
-    }
+        for kc_idx in 0..num_kc { 
+            let kc_beg = kc_idx * KC; 
+            let kc_end = (kc_beg + KC).min(k); 
 
-    let b_slice = b.as_slice(); 
-    for (a_cols, a_panel) in a.col_panels(N_COLS_PER_CHUNK) {
-        for j in 0..n { 
-            let b_col = VecRef::new(&b_slice[j * k + a_cols.start..j * k + a_cols.end]); 
-            let c_col = c.col_mut(j); 
+            let a_panel = a.col_panel(kc_beg..kc_end); 
 
-            faxpy(alpha, a_panel, b_col, c_col); 
+            microkernel(alpha, a_panel, b_panel, c_panel.reborrow(), kc_beg);
         }
     }
+
+
 }
