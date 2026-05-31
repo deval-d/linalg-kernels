@@ -5,12 +5,12 @@ use std::ops::{Add, Mul, Sub};
 use std::simd::{LaneCount, Simd, StdFloat, SupportedLaneCount}; 
 
 /// uses fma 
-pub trait Fma { 
+pub trait Fma {
+    /// computes (self * a) + b 
     fn fma(self, b: Self, c: Self) -> Self; 
 }
 
 impl Fma for f32 { 
-    /// computes (self * a) + b 
     #[inline(always)]
     fn fma(self, b: Self, c: Self) -> Self { 
         self.mul_add(b, c)
@@ -18,7 +18,6 @@ impl Fma for f32 {
 }
 
 impl Fma for f64 { 
-    /// computes (self * a) + b 
     #[inline(always)]
     fn fma(self, b: Self, c: Self) -> Self { 
         self.mul_add(b, c)
@@ -29,7 +28,6 @@ impl<const LANES: usize> Fma for Simd<f32, LANES>
 where 
     LaneCount<LANES>: SupportedLaneCount, 
 {
-    /// computes (self * a) + b 
     #[inline(always)]
     fn fma(self, b: Self, c: Self) -> Self { 
         self.mul_add(b, c) 
