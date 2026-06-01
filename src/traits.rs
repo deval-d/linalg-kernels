@@ -2,7 +2,10 @@
 
 use std::fmt::Display; 
 use std::ops::{Add, Mul, Sub}; 
-use std::simd::{LaneCount, Simd, StdFloat, SupportedLaneCount}; 
+use std::simd::{LaneCount, Simd, StdFloat, SupportedLaneCount};
+
+use crate::l3::gemm::gemm::{dgemm, sgemm};
+use crate::types::{MatMut, MatRef, Transpose}; 
 
 /// uses fma 
 pub trait Fma {
@@ -135,5 +138,51 @@ impl SimdScalarL1 for f32 {
 impl SimdScalarL1 for f64 { 
     const LANES: usize = 16; 
 }
+
+
+pub trait GemmDispatch: Sized {
+    fn gemm( 
+        atrans: Transpose, 
+        btrans: Transpose, 
+        alpha: Self, 
+        beta: Self, 
+        a: MatRef<'_, Self>, 
+        b: MatRef<'_, Self>, 
+        c: MatMut<'_, Self>,
+    ); 
+}
+
+impl GemmDispatch for f32 {
+    fn gemm( 
+        atrans: Transpose, 
+        btrans: Transpose, 
+        alpha: f32, 
+        beta: f32, 
+        a: MatRef<'_, f32>, 
+        b: MatRef<'_, f32>, 
+        c: MatMut<'_, f32>,      
+    ) { 
+        sgemm(atrans, btrans, alpha, beta, a, b, c);
+    }
+}
+
+impl GemmDispatch for f64 { 
+    fn gemm( 
+        atrans: Transpose, 
+        btrans: Transpose, 
+        alpha: f64, 
+        beta: f64, 
+        a: MatRef<'_, f64>, 
+        b: MatRef<'_, f64>, 
+        c: MatMut<'_, f64>,      
+    ) {
+        dgemm(atrans, btrans, alpha, beta, a, b, c);
+    }
+}
+
+
+
+
+
 
 
