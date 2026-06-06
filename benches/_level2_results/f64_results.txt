@@ -1,3 +1,5 @@
+blas = openblas
+
 l2_f64            fastest       │ slowest       │ median        │ mean          │ samples │ iters
 ├─ blas_dgemv_n                 │               │               │               │         │
 │  ├─ 128         3.874 µs      │ 419.1 µs      │ 3.916 µs      │ 8.163 µs      │ 100     │ 100

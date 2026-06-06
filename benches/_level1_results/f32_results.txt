@@ -1,3 +1,5 @@
+blas = openblas 
+
 l1              fastest       │ slowest       │ median        │ mean          │ samples │ iters
 ├─ blas_isamax                │               │               │               │         │
 │  ├─ 128       40.52 ns      │ 13.95 µs      │ 82.52 ns      │ 215.8 ns      │ 100     │ 100
