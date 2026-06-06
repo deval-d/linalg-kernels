@@ -2,15 +2,15 @@ mod common;
 
 use common::{
     bench_rng,
-    bytes_count_f64,
+    bytes_count_f32,
     flops_count,
-    MATRIX_SIZES_L3 as MATRIX_SIZES,
+    MATRIX_SIZES_L3_SMALL as MATRIX_SIZES,
 };
 
 #[cfg(any(feature = "accelerate", feature = "openblas"))]
 use blas_src as _;
 use cblas_sys::{
-    cblas_dgemm,
+    cblas_sgemm,
 };
 
 use faer::{Accum, Mat, Par};
@@ -19,7 +19,7 @@ use faer::linalg::matmul::matmul as faer_matmul;
 use lak::helpers::make_vec_random;
 use lak::types::{MatMut, MatRef, Transpose};
 
-use lak::l3::gemm::gemm::dgemm as gemm;
+use lak::l3::gemm::gemm::sgemm as gemm;
 
 use divan::counter::{BytesCount, ItemsCount};
 use divan::{black_box, Bencher};
@@ -34,19 +34,19 @@ fn main() {
 
 
 #[divan::bench(args = MATRIX_SIZES)]
-fn lak_dgemm_nn(bencher: Bencher, n: usize) {
+fn lak_sgemm_nn(bencher: Bencher, n: usize) {
     let alpha = 0.1;
     let beta  = 0.0;
 
     let rng = &mut bench_rng(0);
 
-    let abuf: Vec<f64> = make_vec_random(n * n, rng);
-    let bbuf: Vec<f64> = make_vec_random(n * n, rng);
+    let abuf: Vec<f32> = make_vec_random(n * n, rng);
+    let bbuf: Vec<f32> = make_vec_random(n * n, rng);
 
-    let mut cbuf: Vec<f64> = make_vec_random(n * n, rng);
+    let mut cbuf: Vec<f32> = make_vec_random(n * n, rng);
 
     bencher
-        .counter(BytesCount::new(bytes_count_f64(3.0, 2, 0.0, n as f64) as u64))
+        .counter(BytesCount::new(bytes_count_f32(3.0, 2, 0.0, n as f32) as u64))
         .counter(ItemsCount::new(flops_count(2, 3, 0, n) as u64))
         .bench_local(|| {
             let a = MatRef::new(&abuf, (n, n));
@@ -69,23 +69,23 @@ fn lak_dgemm_nn(bencher: Bencher, n: usize) {
 
 
 #[divan::bench(args = MATRIX_SIZES)]
-fn blas_dgemm_nn(bencher: Bencher, n: usize) {
+fn blas_sgemm_nn(bencher: Bencher, n: usize) {
     let alpha = 0.1;
     let beta  = 0.0;
 
     let rng = &mut bench_rng(0);
 
-    let abuf: Vec<f64> = make_vec_random(n * n, rng);
-    let bbuf: Vec<f64> = make_vec_random(n * n, rng);
+    let abuf: Vec<f32> = make_vec_random(n * n, rng);
+    let bbuf: Vec<f32> = make_vec_random(n * n, rng);
 
-    let mut cbuf: Vec<f64> = make_vec_random(n * n, rng);
+    let mut cbuf: Vec<f32> = make_vec_random(n * n, rng);
 
     bencher
-        .counter(BytesCount::new(bytes_count_f64(3.0, 2, 0.0, n as f64) as u64))
+        .counter(BytesCount::new(bytes_count_f32(3.0, 2, 0.0, n as f32) as u64))
         .counter(ItemsCount::new(flops_count(2, 3, 0, n) as u64))
         .bench_local(|| {
             unsafe {
-                cblas_dgemm(
+                cblas_sgemm(
                     cblas_sys::CBLAS_LAYOUT::CblasColMajor,
                     cblas_sys::CBLAS_TRANSPOSE::CblasNoTrans,
                     cblas_sys::CBLAS_TRANSPOSE::CblasNoTrans,
@@ -109,21 +109,21 @@ fn blas_dgemm_nn(bencher: Bencher, n: usize) {
 
 
 #[divan::bench(args = MATRIX_SIZES)]
-fn faer_dgemm_nn(bencher: Bencher, n: usize) {
+fn faer_sgemm_nn(bencher: Bencher, n: usize) {
     let alpha = 0.1;
 
     let rng = &mut bench_rng(0);
 
-    let abuf: Vec<f64> = make_vec_random(n * n, rng);
-    let bbuf: Vec<f64> = make_vec_random(n * n, rng);
+    let abuf: Vec<f32> = make_vec_random(n * n, rng);
+    let bbuf: Vec<f32> = make_vec_random(n * n, rng);
 
     let a = Mat::from_fn(n, n, |i, j| abuf[i + j * n]);
     let b = Mat::from_fn(n, n, |i, j| bbuf[i + j * n]);
 
-    let mut c = Mat::<f64>::zeros(n, n);
+    let mut c = Mat::<f32>::zeros(n, n);
 
     bencher
-        .counter(BytesCount::new(bytes_count_f64(3.0, 2, 0.0, n as f64) as u64))
+        .counter(BytesCount::new(bytes_count_f32(3.0, 2, 0.0, n as f32) as u64))
         .counter(ItemsCount::new(flops_count(2, 3, 0, n) as u64))
         .bench_local(|| {
             faer_matmul(
@@ -139,3 +139,4 @@ fn faer_dgemm_nn(bencher: Bencher, n: usize) {
             black_box(&c);
         });
 }
+

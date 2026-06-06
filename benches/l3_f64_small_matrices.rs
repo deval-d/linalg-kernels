@@ -4,7 +4,7 @@ use common::{
     bench_rng,
     bytes_count_f64,
     flops_count,
-    MATRIX_SIZES_L3 as MATRIX_SIZES,
+    MATRIX_SIZES_L3_SMALL as MATRIX_SIZES,
 };
 
 #[cfg(any(feature = "accelerate", feature = "openblas"))]
