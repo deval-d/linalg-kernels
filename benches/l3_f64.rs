@@ -6,6 +6,7 @@ use common::{
     MATRIX_SIZES_L3 as MATRIX_SIZES
 }; 
 
+#[cfg(any(feature = "accelerate", feature = "openblas"))]
 use blas_src as _; 
 use cblas_sys::{ 
     cblas_dgemm, 

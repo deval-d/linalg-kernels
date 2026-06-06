@@ -20,7 +20,7 @@ pub const MATRIX_SIZES_L2: &[usize] = &[
 
 #[allow(dead_code)] 
 pub const MATRIX_SIZES_L3: &[usize] = &[ 
-    16, 32, 64, 128, 256, 384, 512,
+    16, 32, 64, 128, 256, 384, 512, 768, 1024, 1280, 1536, 1792
 ]; 
 
 /// calculates 4 * (alpha * n^beta + gamma * n)
