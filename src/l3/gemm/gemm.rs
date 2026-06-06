@@ -2,7 +2,15 @@
 
 use crate::traits::GemmDispatch; 
 use crate::types::{MatMut, MatRef, Transpose};
-use crate::l3::gemm::gemm_nn::{sgemm_nn, dgemm_nn};
+use crate::l3::gemm::{
+    nn_direct::{sgemm_nn, dgemm_nn}, 
+    nn_blocked::{sgemm_nn_blocked, dgemm_nn_blocked}, 
+}; 
+
+// when to transition from direct sgemm to blocked sgemm 
+// based on the row-dimension `m` of C 
+const SGEMM_NN_BLOCKED_THRESHOLD: usize = 128;
+const DGEMM_NN_BLOCKED_THRESHOLD: usize = 128;
 
 /// single precision general matrix-matrix multiplication.
 ///
@@ -30,7 +38,13 @@ pub fn sgemm(
     c: MatMut<'_, f32>, 
 ) { 
     match (atrans, btrans) { 
-        (Transpose::NoTranspose, Transpose::NoTranspose) => sgemm_nn(alpha, beta, a, b, c),
+        (Transpose::NoTranspose, Transpose::NoTranspose) => {
+            if c.n_rows() > SGEMM_NN_BLOCKED_THRESHOLD {
+                sgemm_nn_blocked(alpha, beta, a, b, c);
+            } else {
+                sgemm_nn(alpha, beta, a, b, c);
+            }
+        },
         (_, _) => unimplemented!(), 
     }
 }
@@ -61,7 +75,13 @@ pub fn dgemm(
     c: MatMut<'_, f64>, 
 ) { 
     match (atrans, btrans) { 
-        (Transpose::NoTranspose, Transpose::NoTranspose) => dgemm_nn(alpha, beta, a, b, c),
+        (Transpose::NoTranspose, Transpose::NoTranspose) => {
+            if c.n_rows() > DGEMM_NN_BLOCKED_THRESHOLD {
+                dgemm_nn_blocked(alpha, beta, a, b, c);
+            } else {
+                dgemm_nn(alpha, beta, a, b, c);
+            }
+        },
         (_, _) => unimplemented!(), 
     }
 }
@@ -95,4 +115,3 @@ where T: GemmDispatch
 { 
     T::gemm(atrans, btrans, alpha, beta, a, b, c);
 }
-
