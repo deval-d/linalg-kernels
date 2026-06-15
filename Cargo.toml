@@ -10,14 +10,20 @@ rand = "0.8"
 [dev-dependencies] 
 cblas-sys = { version = "0.1", default-features = false }
 divan = "0.1.21"
+faer = { version = "0.24", default-features = true }
 
-[features] 
-accelerate = ["blas-src/accelerate"]
-openblas   = ["blas-src/openblas"] 
+[features]
+accelerate = ["dep:blas-src", "blas-src/accelerate"]
+openblas   = ["dep:blas-src", "blas-src/openblas"]
+blis       = [] # I use homebrew; this doesn't compile properly
 
 [[bench]]
-name = "l1"
+name = "l1_f32"
 harness = false
+
+[[bench]] 
+name = "l1_f64"
+harness = false 
 
 [[bench]] 
 name = "l2_f32" 
@@ -34,3 +40,12 @@ harness = false
 [[bench]] 
 name = "l3_f64" 
 harness = false
+
+[[bench]] 
+name = "l3_f32_small_matrices" 
+harness = false 
+
+[[bench]] 
+name = "l3_f64_small_matrices" 
+harness = false
+
