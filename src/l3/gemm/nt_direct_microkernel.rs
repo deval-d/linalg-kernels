@@ -1,7 +1,6 @@
-// nn_microkernel.rs 
+// nt_direct_microkernel.rs 
 
 use std::simd::Simd; 
-use crate::fused::faxpy::faxpy;
 use crate::l1::axpy;
 use crate::traits::Fma; 
 use crate::types::{MatMut, MatRef, VecMut, VecRef}; 
@@ -15,17 +14,19 @@ pub(crate) const NR_F32: usize = 4;
 pub(crate) const NR_F64: usize = 4; 
 
 #[inline(always)]
-pub(crate) fn sgemm_nn_micro( 
+pub(crate) fn sgemm_nt_micro( 
     alpha: f32, 
     a_panel: MatRef<'_, f32>, 
-    b_panel: MatRef<'_, f32>, 
+    b: MatRef<'_, f32>, 
     mut c_panel: MatMut<'_, f32>, 
     kc_beg: usize, 
+    j_beg: usize, 
 ) { 
     let (m, kc) = a_panel.dimension(); 
-    let (k, nc) = b_panel.dimension(); 
+    let (n, k) = b.dimension(); 
+    let nc = c_panel.n_cols(); 
     debug_assert_eq!(m,  c_panel.n_rows()); 
-    debug_assert_eq!(nc, c_panel.n_cols()); 
+    debug_assert!(j_beg + nc <= n); 
     debug_assert!(kc_beg + kc <= k);
 
     for j in (0..nc).step_by(NR_F32) {
@@ -37,32 +38,35 @@ pub(crate) fn sgemm_nn_micro(
             skernel_mrnr(
                 alpha, 
                 a_panel, 
-                b_panel, 
+                b, 
                 c_panel.reborrow(), 
                 kc_beg, 
+                j_beg,
                 kc, 
                 j,
                 m, 
-                k
+                n,
             );
 
         } else {
             // leftover cols 
             let j0 = j; 
             let j1 = nc; 
-            let b_slice = b_panel.as_slice(); 
+            let b_slice = b.as_slice(); 
 
             for jj in j0..j1 { 
-                let ccol = c_panel.col_mut(jj); 
-                let bbeg = jj * k + kc_beg; 
-                let bcol = VecRef::new(&b_slice[bbeg..bbeg + kc]); 
+                let mut ccol = c_panel.col_mut(jj); 
+                let jeff = j_beg + jj; 
 
-                faxpy(
-                    alpha, 
-                    a_panel, 
-                    bcol, 
-                    ccol
-                );      
+                for kk in 0..kc { 
+                    let keff = kc_beg + kk; 
+                    let bval = b_slice[keff * n + jeff]; 
+                    axpy(
+                        alpha * bval, 
+                        a_panel.col(kk), 
+                        ccol.reborrow(),
+                    );
+                }
             }
         }
     }
@@ -71,17 +75,19 @@ pub(crate) fn sgemm_nn_micro(
 
 
 #[inline(always)]
-pub(crate) fn dgemm_nn_micro( 
+pub(crate) fn dgemm_nt_micro( 
     alpha: f64, 
     a_panel: MatRef<'_, f64>, 
-    b_panel: MatRef<'_, f64>, 
+    b: MatRef<'_, f64>, 
     mut c_panel: MatMut<'_, f64>, 
     kc_beg: usize, 
+    j_beg: usize, 
 ) { 
     let (m, kc) = a_panel.dimension(); 
-    let (k, nc) = b_panel.dimension(); 
+    let (n, k) = b.dimension(); 
+    let nc = c_panel.n_cols(); 
     debug_assert_eq!(m,  c_panel.n_rows()); 
-    debug_assert_eq!(nc, c_panel.n_cols()); 
+    debug_assert!(j_beg + nc <= n); 
     debug_assert!(kc_beg + kc <= k);
 
     for j in (0..nc).step_by(NR_F64) {
@@ -92,32 +98,35 @@ pub(crate) fn dgemm_nn_micro(
 
             dkernel_mrnr(alpha, 
                 a_panel, 
-                b_panel, 
+                b, 
                 c_panel.reborrow(), 
                 kc_beg,
+                j_beg,
                 kc, 
                 j,
                 m,
-                k
+                n,
             );
 
         } else {
             // leftover cols 
             let j0 = j; 
             let j1 = nc; 
-            let b_slice = b_panel.as_slice(); 
+            let b_slice = b.as_slice(); 
 
             for jj in j0..j1 { 
-                let ccol = c_panel.col_mut(jj); 
-                let bbeg = jj * k + kc_beg; 
-                let bcol = VecRef::new(&b_slice[bbeg..bbeg + kc]); 
+                let mut ccol = c_panel.col_mut(jj); 
+                let jeff = j_beg + jj; 
 
-                faxpy(
-                    alpha, 
-                    a_panel, 
-                    bcol, 
-                    ccol
-                );
+                for kk in 0..kc { 
+                    let keff = kc_beg + kk; 
+                    let bval = b_slice[keff * n + jeff]; 
+                    axpy(
+                        alpha * bval, 
+                        a_panel.col(kk), 
+                        ccol.reborrow(),
+                    );
+                }
             }
         }
     }
@@ -127,13 +136,14 @@ pub(crate) fn dgemm_nn_micro(
 fn skernel_mrnr( 
     alpha: f32, 
     a_panel: MatRef<'_, f32>, 
-    b_panel: MatRef<'_, f32>, 
+    b: MatRef<'_, f32>, 
     mut c_panel: MatMut<'_, f32>, 
     kc_beg: usize, 
+    j_beg: usize, 
     kc: usize, 
     j: usize, 
     m: usize, 
-    k: usize, 
+    n: usize, 
 ) { 
     debug_assert!(NR_F32 == 4); 
 
@@ -151,7 +161,7 @@ fn skernel_mrnr(
     let n_chunks = c0_chunks.len(); 
 
     let a_slice = a_panel.as_slice(); 
-    let b_slice = b_panel.as_slice(); 
+    let b_slice = b.as_slice(); 
 
     for chunk_idx in 0..n_chunks { 
         let mut c0vec = Simd::from_array(c0_chunks[chunk_idx]);
@@ -167,10 +177,11 @@ fn skernel_mrnr(
             let avec = Simd::<f32, MR_F32>::from_slice(acol);
 
             let keff = kc_beg + kk; 
-            let b0 = b_slice[j * k + keff]; 
-            let b1 = b_slice[(j + 1) * k + keff]; 
-            let b2 = b_slice[(j + 2) * k + keff]; 
-            let b3 = b_slice[(j + 3) * k + keff]; 
+            let jeff = j_beg + j; 
+            let b0 = b_slice[keff * n + jeff]; 
+            let b1 = b_slice[keff * n + jeff + 1]; 
+            let b2 = b_slice[keff * n + jeff + 2]; 
+            let b3 = b_slice[keff * n + jeff + 3]; 
             let b0vec = Simd::<f32, MR_F32>::splat(alpha * b0); 
             let b1vec = Simd::<f32, MR_F32>::splat(alpha * b1); 
             let b2vec = Simd::<f32, MR_F32>::splat(alpha * b2); 
@@ -207,10 +218,11 @@ fn skernel_mrnr(
             ); 
 
             let keff = kc_beg + kk;
-            let b0 = b_slice[j * k + keff]; 
-            let b1 = b_slice[(j + 1) * k + keff]; 
-            let b2 = b_slice[(j + 2) * k + keff]; 
-            let b3 = b_slice[(j + 3) * k + keff]; 
+            let jeff = j_beg + j; 
+            let b0 = b_slice[keff * n + jeff]; 
+            let b1 = b_slice[keff * n + jeff + 1]; 
+            let b2 = b_slice[keff * n + jeff + 2]; 
+            let b3 = b_slice[keff * n + jeff + 3]; 
 
             axpy(alpha * b0, acol, c0.reborrow());
             axpy(alpha * b1, acol, c1.reborrow()); 
@@ -223,13 +235,14 @@ fn skernel_mrnr(
 fn dkernel_mrnr( 
     alpha: f64, 
     a_panel: MatRef<'_, f64>, 
-    b_panel: MatRef<'_, f64>, 
+    b: MatRef<'_, f64>, 
     mut c_panel: MatMut<'_, f64>, 
     kc_beg: usize, 
+    j_beg: usize, 
     kc: usize, 
     j: usize, 
     m: usize, 
-    k: usize, 
+    n: usize, 
 ) { 
     debug_assert!(NR_F64 == 4); 
 
@@ -247,7 +260,7 @@ fn dkernel_mrnr(
     let n_chunks = c0_chunks.len(); 
 
     let a_slice = a_panel.as_slice(); 
-    let b_slice = b_panel.as_slice(); 
+    let b_slice = b.as_slice(); 
 
     for chunk_idx in 0..n_chunks { 
         let mut c0vec = Simd::from_array(c0_chunks[chunk_idx]);
@@ -263,10 +276,11 @@ fn dkernel_mrnr(
             let avec = Simd::<f64, MR_F64>::from_slice(acol);
 
             let keff = kc_beg + kk; 
-            let b0 = b_slice[j * k + keff]; 
-            let b1 = b_slice[(j + 1) * k + keff]; 
-            let b2 = b_slice[(j + 2) * k + keff]; 
-            let b3 = b_slice[(j + 3) * k + keff]; 
+            let jeff = j_beg + j; 
+            let b0 = b_slice[keff * n + jeff]; 
+            let b1 = b_slice[keff * n + jeff + 1]; 
+            let b2 = b_slice[keff * n + jeff + 2]; 
+            let b3 = b_slice[keff * n + jeff + 3]; 
             let b0vec = Simd::<f64, MR_F64>::splat(alpha * b0); 
             let b1vec = Simd::<f64, MR_F64>::splat(alpha * b1); 
             let b2vec = Simd::<f64, MR_F64>::splat(alpha * b2); 
@@ -303,10 +317,11 @@ fn dkernel_mrnr(
             ); 
 
             let keff = kc_beg + kk;
-            let b0 = b_slice[j * k + keff]; 
-            let b1 = b_slice[(j + 1) * k + keff]; 
-            let b2 = b_slice[(j + 2) * k + keff]; 
-            let b3 = b_slice[(j + 3) * k + keff]; 
+            let jeff = j_beg + j; 
+            let b0 = b_slice[keff * n + jeff]; 
+            let b1 = b_slice[keff * n + jeff + 1]; 
+            let b2 = b_slice[keff * n + jeff + 2]; 
+            let b3 = b_slice[keff * n + jeff + 3]; 
 
             axpy(alpha * b0, acol, c0.reborrow());
             axpy(alpha * b1, acol, c1.reborrow()); 

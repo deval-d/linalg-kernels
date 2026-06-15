@@ -1,4 +1,4 @@
-// gemm_nn.rs 
+// nn_direct.rs 
 
 use crate::l1::scal;
 use crate::types::{MatRef, MatMut}; 
@@ -7,10 +7,10 @@ use crate::l3::gemm::nn_direct_microkernel::{
     dgemm_nn_micro, 
 }; 
 
-pub(crate) const NC_F32: usize = 64; 
-pub(crate) const NC_F64: usize = 32; 
-pub(crate) const KC_F32: usize = 64; 
-pub(crate) const KC_F64: usize = 32; 
+pub(crate) const NC_F32: usize = 128; 
+pub(crate) const NC_F64: usize = 64; 
+pub(crate) const KC_F32: usize = 128; 
+pub(crate) const KC_F64: usize = 64; 
 
 #[inline(always)]
 pub(crate) fn sgemm_nn( 

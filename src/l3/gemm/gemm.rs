@@ -1,5 +1,7 @@
 // gemm.rs 
 
+use crate::l3::gemm::nt_blocked::{dgemm_nt_blocked, sgemm_nt_blocked};
+use crate::l3::gemm::nt_direct::{dgemm_nt, sgemm_nt};
 use crate::traits::GemmDispatch; 
 use crate::types::{MatMut, MatRef, Transpose};
 use crate::l3::gemm::{
@@ -38,6 +40,7 @@ pub fn sgemm(
     c: MatMut<'_, f32>, 
 ) { 
     match (atrans, btrans) { 
+
         (Transpose::NoTranspose, Transpose::NoTranspose) => {
             if c.n_rows() > SGEMM_NN_BLOCKED_THRESHOLD {
                 sgemm_nn_blocked(alpha, beta, a, b, c);
@@ -45,6 +48,15 @@ pub fn sgemm(
                 sgemm_nn(alpha, beta, a, b, c);
             }
         },
+
+        (Transpose::NoTranspose, Transpose::Transpose) => {
+            if c.n_rows() > SGEMM_NN_BLOCKED_THRESHOLD {
+                sgemm_nt_blocked(alpha, beta, a, b, c);
+            } else {
+                sgemm_nt(alpha, beta, a, b, c);
+            }
+        },
+
         (_, _) => unimplemented!(), 
     }
 }
@@ -75,6 +87,7 @@ pub fn dgemm(
     c: MatMut<'_, f64>, 
 ) { 
     match (atrans, btrans) { 
+
         (Transpose::NoTranspose, Transpose::NoTranspose) => {
             if c.n_rows() > DGEMM_NN_BLOCKED_THRESHOLD {
                 dgemm_nn_blocked(alpha, beta, a, b, c);
@@ -82,6 +95,15 @@ pub fn dgemm(
                 dgemm_nn(alpha, beta, a, b, c);
             }
         },
+
+        (Transpose::NoTranspose, Transpose::Transpose) => {
+            if c.n_rows() > DGEMM_NN_BLOCKED_THRESHOLD {
+                dgemm_nt_blocked(alpha, beta, a, b, c);
+            } else {
+                dgemm_nt(alpha, beta, a, b, c);
+            }
+        },
+
         (_, _) => unimplemented!(), 
     }
 }

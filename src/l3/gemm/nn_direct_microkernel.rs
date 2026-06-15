@@ -1,4 +1,4 @@
-// nn_microkernel.rs 
+// nn_direct_microkernel.rs 
 
 use std::simd::Simd; 
 use crate::fused::faxpy::faxpy;
