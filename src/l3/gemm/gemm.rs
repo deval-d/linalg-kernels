@@ -2,6 +2,8 @@
 
 use crate::l3::gemm::nt_blocked::{dgemm_nt_blocked, sgemm_nt_blocked};
 use crate::l3::gemm::nt_direct::{dgemm_nt, sgemm_nt};
+use crate::l3::gemm::tn_blocked::{dgemm_tn_blocked, sgemm_tn_blocked};
+use crate::l3::gemm::tt_blocked::{dgemm_tt_blocked, sgemm_tt_blocked};
 use crate::traits::GemmDispatch; 
 use crate::types::{MatMut, MatRef, Transpose};
 use crate::l3::gemm::{
@@ -57,7 +59,13 @@ pub fn sgemm(
             }
         },
 
-        (_, _) => unimplemented!(), 
+        (Transpose::Transpose, Transpose::NoTranspose) => { 
+            sgemm_tn_blocked(alpha, beta, a, b, c);
+        },
+
+        (Transpose::Transpose, Transpose::Transpose)   => { 
+            sgemm_tt_blocked(alpha, beta, a, b, c);
+        }
     }
 }
 
@@ -104,7 +112,13 @@ pub fn dgemm(
             }
         },
 
-        (_, _) => unimplemented!(), 
+        (Transpose::Transpose, Transpose::NoTranspose) => { 
+            dgemm_tn_blocked(alpha, beta, a, b, c);
+        },
+
+        (Transpose::Transpose, Transpose::Transpose)   => { 
+            dgemm_tt_blocked(alpha, beta, a, b, c);
+        }
     }
 }
 

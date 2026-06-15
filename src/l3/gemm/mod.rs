@@ -10,3 +10,9 @@ pub(crate) mod nt_blocked;
 pub(crate) mod nt_direct_microkernel;
 pub(crate) mod nt_blocked_microkernel;
 
+pub(crate) mod tn_blocked; 
+pub(crate) mod tn_blocked_microkernel;
+
+pub(crate) mod tt_blocked;
+pub(crate) mod tt_blocked_microkernel;
+
