@@ -20,12 +20,12 @@ pub const MATRIX_SIZES_L2: &[usize] = &[
 
 #[allow(dead_code)] 
 pub const MATRIX_SIZES_L3: &[usize] = &[ 
-    16, 32, 64, 128, 256, 384, 512, 768, 1024, 1280, 1536, 1792, 2048
+    16, 32, 64, 128, 256, 384, 512, 768, 1024, 1280, 1536, 1792
 ]; 
 
 #[allow(dead_code)] 
 pub const MATRIX_SIZES_L3_SMALL: &[usize] = &[
-    4, 8, 12, 16, 24, 32, 40, 48, 56, 64,
+    4, 8, 12, 16, 32, 48, 64,
     80, 96, 112, 128, 
     160, 192, 224, 256,
 ]; 
