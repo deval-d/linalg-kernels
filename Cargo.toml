@@ -1,10 +1,11 @@
 [package]
-name = "lak"
+name = "lak-kernels"
 version = "0.1.0"
 edition = "2024"
 description = "BLAS-like linear algebra kernels in fully-safe Rust."
 license = "MIT OR Apache-2.0"
 readme = "readme.md"
+repository = "https://github.com/deval-d/lak"
 build = false
 autobins = false
 autobenches = false
@@ -31,7 +32,11 @@ include = [
     "tests/l3/*.rs",
     "benches/*.rs",
 ]
-authors     = ["deval deliwala <deval-d@stanford.edu>"]
+authors     = ["deval deliwala <deval-d@stanford.edu>"] 
+
+[lib]
+name = "lak"
+path = "src/lib.rs"
 
 [dependencies]
 blas-src = { version = "0.12", optional = true, default-features = false }
