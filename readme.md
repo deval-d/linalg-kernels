@@ -4,6 +4,8 @@ LAK is a small personal linear algebra crate with BLAS-like kernels over
 contiguous Rust slices. Its goal was to see whether a safe, contiguous-only Rust
 library can stay minimal and elegant without sacrificing much performance.
 Benchmarks are available [here](https://devald.dev/notes/linalg-kernels/lak_8.pdf).
+Informal notes showing the process and learning experience from writing LAK 
+are available [here](https://devald.dev). 
 
 The API is organized around BLAS levels:
 
@@ -12,7 +14,11 @@ The API is organized around BLAS levels:
 - `lak::l3`: matrix-matrix routines like `gemm`
 
 Matrices are column-major. The safe API uses `MatRef`, `MatMut`, `VecRef`, and
-`VecMut` view types from `lak::types`. Only Level-3 `gemm` is implemented right
+`VecMut` view types from `lak::types`. All Level-1 and Level-2 routines are generic 
+over `f32`/`f64`. Level-3 `gemm` is also generic, but direct `sgemm` and `dgemm` 
+functions exist for maximum performance. 
+
+Only Level-3 `gemm` is implemented right
 now, and it is currently optimized for smaller matrices, roughly under
 `256 x 256`.
 
