@@ -9,7 +9,9 @@ use crate::l1::asum;
 
 const LANES: usize = 32;
 
-/// BLAS LP64 interface for LAK [asum]
+/// BLAS LP64 interface for LAK [asum()]
+///
+/// safety: uses `from_raw_parts`/`from_raw_parts_mut` with the given pointer and buffer length.
 pub unsafe fn asum_lp64<T>(n: i32, x: *const T, incx: i32) -> T
 where
     T: SimdElement + Copy + Default + AddAssign + Abs + Add<Output = T>,
@@ -22,7 +24,9 @@ where
     }
 }
 
-/// BLAS ILP64 interface for LAK [asum]
+/// BLAS ILP64 interface for LAK [asum()]
+///
+/// safety: uses `from_raw_parts`/`from_raw_parts_mut` with the given pointer and buffer length.
 pub unsafe fn asum_ilp64<T>(n: i64, x: *const T, incx: i64) -> T
 where
     T: SimdElement + Copy + Default + AddAssign + Abs + Add<Output = T>,

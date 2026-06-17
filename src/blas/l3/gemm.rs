@@ -4,7 +4,9 @@ use crate::blas::helpers::{char_2_transpose, ptr_2_matmut, ptr_2_matref};
 use crate::l3::{dgemm, gemm, sgemm};
 use crate::types::Transpose;
 
-/// BLAS LP64 interface for LAK [gemm]
+/// BLAS LP64 interface for LAK [gemm()]
+///
+/// safety: uses `from_raw_parts`/`from_raw_parts_mut` with the given pointers and buffer lengths.
 pub unsafe fn gemm_lp64<T>(
     transa: u8,
     transb: u8,
@@ -43,7 +45,9 @@ pub unsafe fn gemm_lp64<T>(
     }
 }
 
-/// BLAS ILP64 interface for LAK [gemm]
+/// BLAS ILP64 interface for LAK [gemm()]
+///
+/// safety: uses `from_raw_parts`/`from_raw_parts_mut` with the given pointers and buffer lengths.
 pub unsafe fn gemm_ilp64<T>(
     transa: u8,
     transb: u8,
@@ -82,8 +86,10 @@ pub unsafe fn gemm_ilp64<T>(
     }
 }
 
-/// BLAS LP64 interface for LAK [sgemm]
+/// BLAS LP64 interface for LAK [sgemm()]
 /// Performance critical direct-[f32] variant. 
+///
+/// safety: uses `from_raw_parts`/`from_raw_parts_mut` with the given pointers and buffer lengths.
 pub unsafe fn sgemm_lp64(
     transa: u8,
     transb: u8,
@@ -120,8 +126,10 @@ pub unsafe fn sgemm_lp64(
     }
 }
 
-/// BLAS ILP64 interface for LAK [sgemm]
+/// BLAS ILP64 interface for LAK [sgemm()]
 /// Performance critical direct-[f32] variant. 
+///
+/// safety: uses `from_raw_parts`/`from_raw_parts_mut` with the given pointers and buffer lengths.
 pub unsafe fn sgemm_ilp64(
     transa: u8,
     transb: u8,
@@ -158,8 +166,10 @@ pub unsafe fn sgemm_ilp64(
     }
 }
 
-/// BLAS LP64 interface for LAK [dgemm]
+/// BLAS LP64 interface for LAK [dgemm()]
 /// Performance critical direct-[f64] variant. 
+///
+/// safety: uses `from_raw_parts`/`from_raw_parts_mut` with the given pointers and buffer lengths.
 pub unsafe fn dgemm_lp64(
     transa: u8,
     transb: u8,
@@ -196,8 +206,10 @@ pub unsafe fn dgemm_lp64(
     }
 }
 
-/// BLAS ILP64 interface for LAK [dgemm]
+/// BLAS ILP64 interface for LAK [dgemm()]
 /// Performance critical direct-[f64] variant. 
+///
+/// safety: uses `from_raw_parts`/`from_raw_parts_mut` with the given pointers and buffer lengths.
 pub unsafe fn dgemm_ilp64(
     transa: u8,
     transb: u8,

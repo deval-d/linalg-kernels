@@ -5,7 +5,9 @@ use crate::traits::Fma;
 use crate::blas::helpers::{ptr_2_matmut, ptr_2_vecref};
 use crate::l2::ger;
 
-/// BLAS LP64 interface for LAK [ger]
+/// BLAS LP64 interface for LAK [ger()]
+///
+/// safety: uses `from_raw_parts`/`from_raw_parts_mut` with the given pointers and buffer lengths.
 pub unsafe fn ger_lp64<T>(
     m: i32,
     n: i32,
@@ -28,7 +30,9 @@ pub unsafe fn ger_lp64<T>(
     }
 }
 
-/// BLAS ILP64 interface for LAK [ger]
+/// BLAS ILP64 interface for LAK [ger()]
+///
+/// safety: uses `from_raw_parts`/`from_raw_parts_mut` with the given pointers and buffer lengths.
 pub unsafe fn ger_ilp64<T>(
     m: i64,
     n: i64,

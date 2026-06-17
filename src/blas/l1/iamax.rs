@@ -8,7 +8,9 @@ use crate::l1::iamax;
 
 const LANES: usize = 16;
 
-/// BLAS LP64 interface for LAK [iamax]
+/// BLAS LP64 interface for LAK [iamax()]
+///
+/// safety: uses `from_raw_parts`/`from_raw_parts_mut` with the given pointer and buffer length.
 pub unsafe fn iamax_lp64<T>(n: i32, x: *const T, incx: i32) -> i32
 where
     T: SimdElement + Copy + Default + PartialOrd + Abs,
@@ -21,7 +23,9 @@ where
     }
 }
 
-/// BLAS ILP64 interface for LAK [iamax]
+/// BLAS ILP64 interface for LAK [iamax()]
+///
+/// safety: uses `from_raw_parts`/`from_raw_parts_mut` with the given pointer and buffer length.
 pub unsafe fn iamax_ilp64<T>(n: i64, x: *const T, incx: i64) -> i64
 where
     T: SimdElement + Copy + Default + PartialOrd + Abs,

@@ -10,7 +10,9 @@ use crate::l1::dot::LANES;
 use crate::l2::gemv;
 use crate::types::Transpose;
 
-/// BLAS LP64 interface for LAK [gemv]
+/// BLAS LP64 interface for LAK [gemv()]
+///
+/// safety: uses `from_raw_parts`/`from_raw_parts_mut` with the given pointers and buffer lengths.
 pub unsafe fn gemv_lp64<T>(
     trans: u8,
     m: i32,
@@ -49,7 +51,9 @@ pub unsafe fn gemv_lp64<T>(
     }
 }
 
-/// BLAS ILP64 interface for LAK [gemv]
+/// BLAS ILP64 interface for LAK [gemv()]
+///
+/// safety: uses `from_raw_parts`/`from_raw_parts_mut` with the given pointers and buffer lengths.
 pub unsafe fn gemv_ilp64<T>(
     trans: u8,
     m: i64,

@@ -9,7 +9,9 @@ use crate::l1::nrm2;
 
 const LANES: usize = 32;
 
-/// BLAS LP64 interface for LAK [nrm2]
+/// BLAS LP64 interface for LAK [nrm2()]
+///
+/// safety: uses `from_raw_parts`/`from_raw_parts_mut` with the given pointer and buffer length.
 pub unsafe fn nrm2_lp64<T>(n: i32, x: *const T, incx: i32) -> T
 where
     T: SimdElement + Copy + Default + AddAssign + Sqrt + Add<Output = T> + Mul<Output = T> + Fma,
@@ -26,7 +28,9 @@ where
     }
 }
 
-/// BLAS ILP64 interface for LAK [nrm2]
+/// BLAS ILP64 interface for LAK [nrm2()]
+///
+/// safety: uses `from_raw_parts`/`from_raw_parts_mut` with the given pointer and buffer length.
 pub unsafe fn nrm2_ilp64<T>(n: i64, x: *const T, incx: i64) -> T
 where
     T: SimdElement + Copy + Default + AddAssign + Sqrt + Add<Output = T> + Mul<Output = T> + Fma,

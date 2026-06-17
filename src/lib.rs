@@ -12,15 +12,14 @@
 //!
 //! The main API is organized by BLAS level: 
 //!
-//! * [l1] - vector-vector routines like [l1::dot] and [l1::axpy] 
-//! * [l2] - matrix-vector routines like [l2::gemv] and [l2::trsv] 
-//! * [l3] - matrix-matrix routines like [l3::gemm] 
+//! * [l1] - vector-vector routines like [l1::dot()] and [l1::axpy()] 
+//! * [l2] - matrix-vector routines like [l2::gemv()] and [l2::trsv()] 
+//! * [l3] - matrix-matrix routines like [l3::gemm()] 
 //!
-//! Currently, [l3::gemm] is the only level-3 routine implemented. It is optimized 
-//! for shorter matrices roughly < 256 x n. Additionally, LAK 
-//! only accepts real [f32]/[f64] scalars. 
+//! Currently, [l3::gemm()] is the only level-3 routine implemented. LAK only
+//! accepts real [f32]/[f64] scalars. 
 //!
-//! GEMM also provides direct [f32] [l3::sgemm] and [f64] [l3::dgemm] for maximum 
+//! GEMM also provides direct [f32] [l3::sgemm()] and [f64] [l3::dgemm()] for maximum 
 //! performance. Level-1 and level-2 routines are all generic.  
 //!
 //! Example:
@@ -83,6 +82,7 @@
 
 pub mod types; 
 pub mod traits; 
+#[doc(hidden)]
 pub mod helpers;
 
 pub mod l1; 

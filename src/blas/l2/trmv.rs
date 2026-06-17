@@ -11,7 +11,9 @@ use crate::fused::ftrmsv::N_ROWS_PER_CHUNK;
 use crate::l1::dot::LANES;
 use crate::l2::trmv;
 
-/// BLAS LP64 interface for LAK [trmv]
+/// BLAS LP64 interface for LAK [trmv()]
+///
+/// safety: uses `from_raw_parts`/`from_raw_parts_mut` with the given pointers and buffer lengths.
 pub unsafe fn trmv_lp64<T>(
     uplo: u8,
     trans: u8,
@@ -47,7 +49,9 @@ pub unsafe fn trmv_lp64<T>(
     }
 }
 
-/// BLAS ILP64 interface for LAK [trmv]
+/// BLAS ILP64 interface for LAK [trmv()]
+///
+/// safety: uses `from_raw_parts`/`from_raw_parts_mut` with the given pointers and buffer lengths.
 pub unsafe fn trmv_ilp64<T>(
     uplo: u8,
     trans: u8,
