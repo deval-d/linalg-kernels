@@ -2,6 +2,36 @@
 name = "lak"
 version = "0.1.0"
 edition = "2024"
+description = "BLAS-like linear algebra kernels in fully-safe Rust."
+license = "MIT OR Apache-2.0"
+readme = "readme.md"
+build = false
+autobins = false
+autobenches = false
+include = [
+    "Cargo.toml",
+    "readme.md",
+    "rust-toolchain.toml",
+    "src/lib.rs",
+    "src/types.rs",
+    "src/traits.rs",
+    "src/helpers.rs",
+    "src/l1/*.rs",
+    "src/l2/*.rs",
+    "src/l3/*.rs",
+    "src/l3/gemm/*.rs",
+    "src/fused/*.rs",
+    "src/blas/*.rs",
+    "src/blas/l1/*.rs",
+    "src/blas/l2/*.rs",
+    "src/blas/l3/*.rs",
+    "tests/*.rs",
+    "tests/l1/*.rs",
+    "tests/l2/*.rs",
+    "tests/l3/*.rs",
+    "benches/*.rs",
+]
+authors     = ["deval deliwala <deval-d@stanford.edu>"]
 
 [dependencies]
 blas-src = { version = "0.12", optional = true, default-features = false }
@@ -40,12 +70,3 @@ harness = false
 [[bench]] 
 name = "l3_f64" 
 harness = false
-
-[[bench]] 
-name = "l3_f32_small_matrices" 
-harness = false 
-
-[[bench]] 
-name = "l3_f64_small_matrices" 
-harness = false
-
