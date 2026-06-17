@@ -11,7 +11,7 @@ LAK is a small personal linear algebra crate with BLAS-like kernels over
 contiguous Rust slices. Its goal was to see whether a safe, contiguous-only Rust
 library can stay minimal and elegant without sacrificing much performance.
 Benchmarks are available [here](https://devald.dev/notes/linalg-kernels/lak_8.pdf).
-The current blocking constants and chunk sizes are tuned for armv8/Apple
+The current blocking constants and chunk sizes are tuned for ARMv8/Apple
 Silicon. If you test LAK on another architecture and find better parameters,
 tuning contributions are welcome.
 
@@ -26,9 +26,13 @@ Matrices are column-major. The safe API uses `MatRef`, `MatMut`, `VecRef`, and
 over `f32`/`f64`. Level-3 `gemm` is also generic, but direct `sgemm` and `dgemm` 
 functions exist for maximum performance. 
 
-Only Level-3 `gemm` is implemented right
-now, and it is currently optimized for ``short`` matrices, roughly under
-`256 x n`, where `n` can go upto 2048.
+LAK also provides `lak::blas`, a thin wrapper around the historical BLAS API for
+both LP64 and ILP64 callers. Though since LAK is contiguous-only, strides are asserted 
+to be 1. 
+
+The only Level-3 routine implemented right
+now is `gemm`, and it's currently optimized for "short" matrices, roughly under
+`256 x n`, where `n` can go up to 2048. 
 
 ```rust
 use lak::l3::gemm;
