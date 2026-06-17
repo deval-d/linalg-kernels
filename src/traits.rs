@@ -2,7 +2,7 @@
 
 use std::fmt::Display; 
 use std::ops::{Add, Mul, Sub}; 
-use std::simd::{LaneCount, Simd, StdFloat, SupportedLaneCount};
+use std::simd::{Simd, StdFloat};
 
 use crate::l3::{dgemm, sgemm};
 use crate::types::{MatMut, MatRef, Transpose}; 
@@ -27,20 +27,14 @@ impl Fma for f64 {
     }
 }
 
-impl<const LANES: usize> Fma for Simd<f32, LANES> 
-where 
-    LaneCount<LANES>: SupportedLaneCount, 
-{
+impl<const LANES: usize> Fma for Simd<f32, LANES> {
     #[inline(always)]
     fn fma(self, b: Self, c: Self) -> Self { 
         self.mul_add(b, c) 
     }
 }
 
-impl<const LANES: usize> Fma for Simd<f64, LANES> 
-where 
-    LaneCount<LANES>: SupportedLaneCount, 
-{
+impl<const LANES: usize> Fma for Simd<f64, LANES> {
     /// computes (self * a) + b 
     #[inline(always)]
     fn fma(self, b: Self, c: Self) -> Self { 
@@ -183,9 +177,6 @@ impl GemmDispatch for f64 {
         dgemm(atrans, btrans, alpha, beta, a, b, c);
     }
 }
-
-
-
 
 
 
