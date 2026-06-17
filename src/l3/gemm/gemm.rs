@@ -13,7 +13,7 @@ use crate::l3::gemm_impl::{
 
 // when to transition from direct sgemm to blocked sgemm 
 // based on the row-dimension `m` of C 
-const SGEMM_NN_BLOCKED_THRESHOLD: usize = 128;
+const SGEMM_NN_BLOCKED_THRESHOLD: usize = 256;
 const DGEMM_NN_BLOCKED_THRESHOLD: usize = 128;
 
 /// single precision general matrix-matrix multiplication.
