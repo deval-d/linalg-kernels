@@ -4,8 +4,6 @@ LAK is a small personal linear algebra crate with BLAS-like kernels over
 contiguous Rust slices. Its goal was to see whether a safe, contiguous-only Rust
 library can stay minimal and elegant without sacrificing much performance.
 Benchmarks are available [here](https://devald.dev/notes/linalg-kernels/lak_8.pdf).
-Informal notes showing the process and learning experience from writing LAK 
-are available [here](https://devald.dev). 
 
 The API is organized around BLAS levels:
 
@@ -64,3 +62,6 @@ assert_eq!(c.as_slice(), &[76.0, 100.0, 103.0, 136.0]);
 ```
 
 This crate currently targets nightly Rust because it uses `portable_simd`.
+
+Informal notes on LAK’s design, implementation challenges, and lessons learned
+are available [here](https://devald.dev).
