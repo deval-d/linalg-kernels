@@ -1,6 +1,7 @@
 mod common;
 use common::{SIZES, bytes_count_f64, bench_rng};
 
+#[cfg(any(feature = "accelerate", feature = "openblas"))]
 use blas_src as _;
 use cblas_sys::{
     cblas_dasum,
@@ -16,14 +17,14 @@ use cblas_sys::{
 use lak::helpers::make_vec_random;
 use lak::types::{VecRef, VecMut};
 
-use lak::l1::asum::asum;
-use lak::l1::axpy::axpy;
-use lak::l1::copy::copy;
-use lak::l1::dot::dot;
-use lak::l1::iamax::iamax;
-use lak::l1::nrm2::nrm2;
-use lak::l1::scal::scal;
-use lak::l1::swap::swap;
+use lak::l1::asum;
+use lak::l1::axpy;
+use lak::l1::copy;
+use lak::l1::dot;
+use lak::l1::iamax;
+use lak::l1::nrm2;
+use lak::l1::scal;
+use lak::l1::swap;
 
 use divan::{counter::BytesCount, Bencher};
 

@@ -15,19 +15,13 @@ pub const SIZES: &[usize] = &[
 
 #[allow(dead_code)] 
 pub const MATRIX_SIZES_L2: &[usize] = &[ 
-    128, 256, 512, 1024, 2048, 
+    32, 64, 128, 256, 384, 512, 768, 1024, 1280, 1536, 1792, 
 ]; 
 
 #[allow(dead_code)] 
 pub const MATRIX_SIZES_L3: &[usize] = &[ 
-    16, 32, 64, 128, 256, 384, 512, 768, 1024, 1280, 1536, 1792
-]; 
-
-#[allow(dead_code)] 
-pub const MATRIX_SIZES_L3_SMALL: &[usize] = &[
-    4, 8, 12, 16, 32, 48, 64,
-    80, 96, 112, 128, 
-    160, 192, 224, 256,
+    4, 8, 12, 16, 32, 48, 64, 80, 96, 112, 128, 160, 192, 224, 
+    256, 384, 512, 768, 1024, 1280, 1536, 1792
 ]; 
 
 /// calculates 4 * (alpha * n^beta + gamma * n)

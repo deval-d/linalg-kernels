@@ -1,6 +1,7 @@
 mod common; 
 use common::{bench_rng, bytes_count_f32, flops_count, MATRIX_SIZES_L2 as MATRIX_SIZES}; 
 
+#[cfg(any(feature = "accelerate", feature = "openblas"))]
 use blas_src as _; 
 use cblas_sys::{ 
     cblas_sgemv, cblas_sger, cblas_strmv, cblas_strsv, 
@@ -9,10 +10,10 @@ use cblas_sys::{
 use lak::helpers::{make_behaved_mat_dd_f32, make_vec_random};
 use lak::types::{MatMut, MatRef, Transpose, Triangular, VecMut, VecRef};
 
-use lak::l2::gemv::gemv;
-use lak::l2::ger::ger;
-use lak::l2::trmv::trmv;
-use lak::l2::trsv::trsv;
+use lak::l2::gemv;
+use lak::l2::ger;
+use lak::l2::trmv;
+use lak::l2::trsv;
 
 use divan::counter::{BytesCount, ItemsCount};
 use divan::{black_box, Bencher};

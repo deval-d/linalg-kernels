@@ -17,7 +17,7 @@ use faer::linalg::matmul::matmul as faer_matmul;
 use lak::helpers::make_vec_random;
 use lak::types::{MatMut, MatRef, Transpose};
 
-use lak::l3::gemm::gemm::dgemm as gemm;
+use lak::l3::dgemm as gemm;
 
 use divan::counter::{BytesCount, ItemsCount};
 use divan::{black_box, Bencher};
