@@ -16,11 +16,12 @@
 //! * [l2] - matrix-vector routines like [l2::gemv] and [l2::trsv] 
 //! * [l3] - matrix-matrix routines like [l3::gemm] 
 //!
-//! Currently, [l3::gemm] is the only level-3 routine implemented. Additionally, LAK 
+//! Currently, [l3::gemm] is the only level-3 routine implemented. It is optimized 
+//! for shorter matrices roughly < 256 x n. Additionally, LAK 
 //! only accepts real [f32]/[f64] scalars. 
 //!
 //! GEMM also provides direct [f32] [l3::sgemm] and [f64] [l3::dgemm] for maximum 
-//! performance. Level-1 and level-2 routines are all generic. 
+//! performance. Level-1 and level-2 routines are all generic.  
 //!
 //! Example:
 //! ```
