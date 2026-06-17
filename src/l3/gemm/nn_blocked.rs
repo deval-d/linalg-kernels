@@ -16,11 +16,11 @@ use crate::types::{MatMut, MatRef};
 
 // tunable
 pub(crate) const MC_F32: usize = 128;
-pub(crate) const MC_F64: usize = 64;
+pub(crate) const MC_F64: usize = 128;
 pub(crate) const NC_F32: usize = 128;
-pub(crate) const NC_F64: usize = 64;
+pub(crate) const NC_F64: usize = 128;
 pub(crate) const KC_F32: usize = 128;
-pub(crate) const KC_F64: usize = 64;
+pub(crate) const KC_F64: usize = 256;
 
 
 /// mutable column-major row block inside a full column panel.

@@ -13,8 +13,10 @@ use crate::l3::gemm_impl::{
 
 // when to transition from direct sgemm to blocked sgemm 
 // based on the row-dimension `m` of C 
-const SGEMM_NN_BLOCKED_THRESHOLD: usize = 256;
-const DGEMM_NN_BLOCKED_THRESHOLD: usize = 128;
+const SGEMM_NN_BLOCKED_THRESHOLD: usize = 96;
+const DGEMM_NN_BLOCKED_THRESHOLD: usize = 48;
+const SGEMM_NT_BLOCKED_THRESHOLD: usize = 256;
+const DGEMM_NT_BLOCKED_THRESHOLD: usize = 128;
 
 /// single precision general matrix-matrix multiplication.
 ///
@@ -44,7 +46,7 @@ pub fn sgemm(
     match (atrans, btrans) { 
 
         (Transpose::NoTranspose, Transpose::NoTranspose) => {
-            if c.n_rows() > SGEMM_NN_BLOCKED_THRESHOLD {
+            if c.n_rows() > SGEMM_NT_BLOCKED_THRESHOLD {
                 sgemm_nn_blocked(alpha, beta, a, b, c);
             } else {
                 sgemm_nn(alpha, beta, a, b, c);
@@ -97,7 +99,7 @@ pub fn dgemm(
     match (atrans, btrans) { 
 
         (Transpose::NoTranspose, Transpose::NoTranspose) => {
-            if c.n_rows() > DGEMM_NN_BLOCKED_THRESHOLD {
+            if c.n_rows() > DGEMM_NT_BLOCKED_THRESHOLD {
                 dgemm_nn_blocked(alpha, beta, a, b, c);
             } else {
                 dgemm_nn(alpha, beta, a, b, c);
