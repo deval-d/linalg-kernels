@@ -2,7 +2,7 @@ use super::common::{assert_close, ITERATIONS};
 
 use blas_src as _; 
 use cblas_sys::cblas_dswap; 
-use lak::l1::swap::swap; 
+use lak::l1::swap; 
 use lak::types::VecMut; 
 use lak::helpers::{make_vec_random, test_rng}; 
 

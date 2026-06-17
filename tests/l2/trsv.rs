@@ -2,7 +2,7 @@ use super::common::{assert_close, ITERATIONS};
 
 use blas_src as _; 
 use lak::types::{VecMut, MatRef, Transpose, Triangular}; 
-use lak::l2::trsv::trsv; 
+use lak::l2::trsv; 
 use cblas_sys::cblas_dtrsv; 
 use lak::helpers::{make_behaved_mat_dd_f64, make_vec_random, test_rng}; 
 

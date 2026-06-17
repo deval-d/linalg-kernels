@@ -2,7 +2,7 @@ use super::common::ITERATIONS;
 
 use blas_src as _; 
 use cblas_sys::cblas_idamax; 
-use lak::l1::iamax::iamax; 
+use lak::l1::iamax; 
 use lak::types::VecRef; 
 use lak::helpers::{make_vec_random, test_rng};
 

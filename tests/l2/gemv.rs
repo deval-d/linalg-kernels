@@ -2,7 +2,7 @@ use super::common::{assert_close, ITERATIONS};
 
 use blas_src as _; 
 use lak::types::{VecRef, VecMut, MatRef, Transpose}; 
-use lak::l2::gemv::gemv; 
+use lak::l2::gemv; 
 use cblas_sys::cblas_dgemv; 
 use lak::helpers::{test_rng, make_vec_random}; 
 

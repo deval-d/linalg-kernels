@@ -2,7 +2,7 @@ use super::common::{ITERATIONS, assert_close};
 
 use blas_src as _; 
 use cblas_sys::cblas_dasum; 
-use lak::l1::asum::asum; 
+use lak::l1::asum; 
 use lak::types::VecRef; 
 use lak::helpers::{make_vec_random, test_rng}; 
 

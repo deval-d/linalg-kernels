@@ -2,7 +2,7 @@ use super::common::{assert_close, ITERATIONS};
 
 use blas_src as _; 
 use cblas_sys::cblas_dcopy; 
-use lak::l1::copy::copy; 
+use lak::l1::copy; 
 use lak::types::{VecRef, VecMut};
 use lak::helpers::{make_vec_random, test_rng};
 
