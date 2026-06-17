@@ -1,6 +1,6 @@
 [package]
 name = "lak-kernels"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 description = "BLAS-like linear algebra kernels in fully-safe Rust."
 license = "MIT OR Apache-2.0"
