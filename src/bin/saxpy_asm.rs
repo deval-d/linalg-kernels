@@ -1,4 +1,4 @@
-use lak::l1::axpy::axpy;
+use lak::l1::axpy;
 use lak::types::{VecMut, VecRef};
 
 #[inline(never)]

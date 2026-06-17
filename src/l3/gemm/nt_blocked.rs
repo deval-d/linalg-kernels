@@ -1,7 +1,7 @@
 // nt_blocked.rs
 
 use crate::l1::scal;
-use crate::l3::gemm::nn_blocked::{
+use crate::l3::gemm_impl::nn_blocked::{
     CBlockMut,
     KC_F32,
     KC_F64,
@@ -10,7 +10,7 @@ use crate::l3::gemm::nn_blocked::{
     NC_F32,
     NC_F64,
 };
-use crate::l3::gemm::nt_blocked_microkernel::{
+use crate::l3::gemm_impl::nt_blocked_microkernel::{
     dgemm_nt_blocked_micro,
     dgemm_nt_blocked_tail,
     sgemm_nt_blocked_micro,

@@ -1,4 +1,4 @@
-use lak::l2::gemv::gemv;
+use lak::l2::gemv;
 use lak::types::{MatRef, Transpose, VecMut, VecRef};
 
 #[inline(never)]

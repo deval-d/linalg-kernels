@@ -1,4 +1,4 @@
-use lak::l1::asum::asum;
+use lak::l1::asum;
 use lak::types::VecRef;
 
 #[inline(never)]

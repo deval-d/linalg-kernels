@@ -2,7 +2,7 @@
 
 use crate::l1::scal;
 use crate::types::{MatRef, MatMut}; 
-use crate::l3::gemm::nn_direct_microkernel::{
+use crate::l3::gemm_impl::nn_direct_microkernel::{
     sgemm_nn_micro, 
     dgemm_nn_micro, 
 }; 

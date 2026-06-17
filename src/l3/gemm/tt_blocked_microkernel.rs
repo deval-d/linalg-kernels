@@ -3,7 +3,7 @@
 use std::simd::Simd;
 
 use crate::l1::axpy;
-use crate::l3::gemm::nn_blocked::CBlockMut;
+use crate::l3::gemm_impl::nn_blocked::CBlockMut;
 use crate::traits::Fma;
 use crate::types::{MatRef, VecMut, VecRef};
 
@@ -90,7 +90,7 @@ pub(crate) fn sgemm_tt_blocked_tail(
     let (n, k) = b.dimension();
     let nc = c_block.n_cols();
 
-    debug_assert_eq!(packed_a.len(), mc * crate::l3::gemm::nn_blocked::KC_F32);
+    debug_assert_eq!(packed_a.len(), mc * crate::l3::gemm_impl::nn_blocked::KC_F32);
     debug_assert_eq!(mc, c_block.n_rows());
     debug_assert!(j_beg <= nc);
     debug_assert!(j_offset + nc <= n);
@@ -135,7 +135,7 @@ pub(crate) fn dgemm_tt_blocked_tail(
     let (n, k) = b.dimension();
     let nc = c_block.n_cols();
 
-    debug_assert_eq!(packed_a.len(), mc * crate::l3::gemm::nn_blocked::KC_F64);
+    debug_assert_eq!(packed_a.len(), mc * crate::l3::gemm_impl::nn_blocked::KC_F64);
     debug_assert_eq!(mc, c_block.n_rows());
     debug_assert!(j_beg <= nc);
     debug_assert!(j_offset + nc <= n);

@@ -94,6 +94,31 @@ where
 /// * a: [MatRef] - matrix A 
 /// * x: [VecRef] - vector x 
 /// * y: [VecMut] - vector y
+///
+/// example:
+/// ```
+/// use lak::l2::gemv;
+/// use lak::types::{MatRef, VecMut, VecRef, Transpose};
+///
+/// // col-major 2 x 3 matrix:
+/// // [1 3 5]
+/// // [2 4 6]
+/// let a = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0];
+/// let x = [1.0, 1.0, 1.0];
+/// let mut y = [0.0, 0.0];
+///
+/// let alpha = 1.0;
+/// let beta = 0.0;
+///
+/// let a = MatRef::new(&a, (2, 3));
+/// let x = VecRef::new(&x);
+/// let mut y = VecMut::new(&mut y);
+/// 
+/// // reborrow() used to allow y.as_slice() afterwards in the assert.
+/// gemv(Transpose::NoTranspose, alpha, beta, a, x, y.reborrow());
+///
+/// assert_eq!(y.as_slice(), &[9.0, 12.0]);
+/// ```
 pub fn gemv<T>( 
     trans: Transpose, 
     alpha: T, 
@@ -125,6 +150,5 @@ where
         Transpose::Transpose   => gemv_t(alpha, beta, a, x, y), 
     }
 }
-
 
 

@@ -3,7 +3,7 @@
 use std::simd::Simd;
 
 use crate::l1::axpy;
-use crate::l3::gemm::nn_blocked::CBlockMut;
+use crate::l3::gemm_impl::nn_blocked::CBlockMut;
 use crate::traits::Fma;
 use crate::types::{MatRef, VecMut, VecRef};
 

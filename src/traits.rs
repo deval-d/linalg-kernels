@@ -4,7 +4,7 @@ use std::fmt::Display;
 use std::ops::{Add, Mul, Sub}; 
 use std::simd::{LaneCount, Simd, StdFloat, SupportedLaneCount};
 
-use crate::l3::gemm::gemm::{dgemm, sgemm};
+use crate::l3::{dgemm, sgemm};
 use crate::types::{MatMut, MatRef, Transpose}; 
 
 /// uses fma 
@@ -140,7 +140,9 @@ impl SimdScalarL1 for f64 {
 }
 
 
+/// dispatches generic [crate::l3::gemm] calls to [sgemm]/[dgemm]. 
 pub trait GemmDispatch: Sized {
+    /// calls the concrete [sgemm]/[dgemm] implementation for self 
     fn gemm( 
         atrans: Transpose, 
         btrans: Transpose, 
@@ -153,6 +155,7 @@ pub trait GemmDispatch: Sized {
 }
 
 impl GemmDispatch for f32 {
+    /// dispatches to [sgemm]
     fn gemm( 
         atrans: Transpose, 
         btrans: Transpose, 
@@ -167,6 +170,7 @@ impl GemmDispatch for f32 {
 }
 
 impl GemmDispatch for f64 { 
+    /// dispatches to [dgemm]
     fn gemm( 
         atrans: Transpose, 
         btrans: Transpose, 
@@ -179,7 +183,6 @@ impl GemmDispatch for f64 {
         dgemm(atrans, btrans, alpha, beta, a, b, c);
     }
 }
-
 
 
 

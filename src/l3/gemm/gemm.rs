@@ -1,12 +1,12 @@
 // gemm.rs 
 
-use crate::l3::gemm::nt_blocked::{dgemm_nt_blocked, sgemm_nt_blocked};
-use crate::l3::gemm::nt_direct::{dgemm_nt, sgemm_nt};
-use crate::l3::gemm::tn_blocked::{dgemm_tn_blocked, sgemm_tn_blocked};
-use crate::l3::gemm::tt_blocked::{dgemm_tt_blocked, sgemm_tt_blocked};
+use crate::l3::gemm_impl::nt_blocked::{dgemm_nt_blocked, sgemm_nt_blocked};
+use crate::l3::gemm_impl::nt_direct::{dgemm_nt, sgemm_nt};
+use crate::l3::gemm_impl::tn_blocked::{dgemm_tn_blocked, sgemm_tn_blocked};
+use crate::l3::gemm_impl::tt_blocked::{dgemm_tt_blocked, sgemm_tt_blocked};
 use crate::traits::GemmDispatch; 
 use crate::types::{MatMut, MatRef, Transpose};
-use crate::l3::gemm::{
+use crate::l3::gemm_impl::{
     nn_direct::{sgemm_nn, dgemm_nn}, 
     nn_blocked::{sgemm_nn_blocked, dgemm_nn_blocked}, 
 }; 
@@ -138,6 +138,51 @@ pub fn dgemm(
 /// This generic wrapper dispatches to the appropriate scalar implementation.
 /// For peak benchmarking or the most predictable codegen, call [sgemm] or
 /// [dgemm] directly.
+///
+/// example:
+/// ```
+/// use lak::l3::gemm;
+/// use lak::types::{MatMut, MatRef, Transpose};
+///
+/// // col-major 2 x 3 matrix:
+/// // [1 3 5]
+/// // [2 4 6]
+/// let a = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0];
+///
+/// // col-major 3 x 2 matrix:
+/// // [ 7 10]
+/// // [ 8 11]
+/// // [ 9 12]
+/// let b = [7.0, 8.0, 9.0, 10.0, 11.0, 12.0];
+///
+/// // col-major 2 x 2 matrix:
+/// // [0 0]
+/// // [0 0]
+/// let mut c = [0.0, 0.0, 0.0, 0.0];
+///
+/// let alpha = 1.0;
+/// let beta = 0.0;
+///
+/// let a = MatRef::new(&a, (2, 3));
+/// let b = MatRef::new(&b, (3, 2));
+/// let mut c = MatMut::new(&mut c, (2, 2));
+/// 
+/// // c.reborrow() used to allow c.as_slice() afterwards in the assert 
+/// gemm(
+///     Transpose::NoTranspose,
+///     Transpose::NoTranspose,
+///     alpha,
+///     beta,
+///     a,
+///     b,
+///     c.reborrow(),
+/// );
+///
+/// // C = A * B:
+/// // [ 76 103]
+/// // [100 136]
+/// assert_eq!(c.as_slice(), &[76.0, 100.0, 103.0, 136.0]);
+/// ```
 pub fn gemm<T>( 
     atrans: Transpose, 
     btrans: Transpose, 

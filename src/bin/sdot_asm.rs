@@ -1,4 +1,4 @@
-use lak::l1::dot::dot;
+use lak::l1::dot;
 use lak::traits::Fma;
 use lak::types::VecRef;
 

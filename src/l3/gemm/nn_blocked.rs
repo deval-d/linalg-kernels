@@ -3,7 +3,7 @@
 use std::ops::Range;
 
 use crate::l1::scal;
-use crate::l3::gemm::nn_blocked_microkernel::{
+use crate::l3::gemm_impl::nn_blocked_microkernel::{
     dgemm_nn_blocked_micro,
     dgemm_nn_blocked_tail,
     sgemm_nn_blocked_micro,

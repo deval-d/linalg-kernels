@@ -11,8 +11,7 @@ use crate::traits::Fma;
 pub const N_ROWS_PER_CHUNK: usize = 64; 
 pub(crate) const N_COLS_PER_CHUNK: usize = 4; 
 
-/// a "fused" axpy / mini no-transpose gemv panel: 
-pub fn faxpy<T>( 
+pub(crate) fn faxpy<T>( 
     alpha: T, 
     a: MatRef<'_, T>, 
     x: VecRef<'_, T>, 

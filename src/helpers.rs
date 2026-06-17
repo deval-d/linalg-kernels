@@ -6,11 +6,13 @@ use rand::{Rng, SeedableRng};
 
 pub const TEST_SEED: u64 = 676767; 
 
+/// For tests 
 #[allow(dead_code)] 
 pub fn test_rng(case: u64) -> StdRng { 
     StdRng::seed_from_u64(TEST_SEED + case)
 }
 
+/// For tests
 #[allow(dead_code)] 
 pub fn make_vec_random<T, R>( 
     length: usize,
@@ -33,6 +35,7 @@ where
     buffer
 }
 
+/// For tests 
 #[allow(dead_code)]
 pub fn make_behaved_mat_dd_f64(
     n: usize,
@@ -65,6 +68,7 @@ pub fn make_behaved_mat_dd_f64(
     a
 }
 
+/// For tests 
 #[allow(dead_code)]
 pub fn make_behaved_mat_dd_f32(
     n: usize,

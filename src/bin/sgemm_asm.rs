@@ -1,4 +1,4 @@
-use lak::l3::gemm::gemm::sgemm;
+use lak::l3::sgemm;
 use lak::types::{MatMut, MatRef, Transpose};
 
 #[inline(never)]

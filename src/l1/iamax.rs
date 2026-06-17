@@ -14,7 +14,8 @@ const LANES: usize = 16;
 /// * x: [VecRef] 
 ///
 /// returns: 
-/// * [usize] - index for largest absolute value element in x
+/// * [usize] - index for largest absolute value element in x. 
+/// * 0       - if input vector empty. 
 pub fn iamax<T>( 
     x: VecRef<'_, T>
 ) -> usize
