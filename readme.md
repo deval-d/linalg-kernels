@@ -30,9 +30,7 @@ LAK also provides `lak::blas`, a thin wrapper around the historical BLAS API for
 both LP64 and ILP64 callers. Though since LAK is contiguous-only, strides are asserted 
 to be 1. 
 
-The only Level-3 routine implemented right
-now is `gemm`, and it's currently optimized for "short" matrices, roughly under
-`256 x n`, where `n` can go up to 2048. 
+The only Level-3 routine implemented right now is `gemm`.
 
 ```rust
 use lak::l3::gemm;
