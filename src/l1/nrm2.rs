@@ -1,0 +1,55 @@
+// nrm2.rs 
+
+use std::ops::{Add, AddAssign, Mul};
+use std::simd::{Simd, SimdElement}; 
+use std::simd::num::SimdFloat; 
+
+use crate::types::VecRef;
+use crate::traits::{Fma, Sqrt};
+
+const LANES: usize = 32; 
+
+/// computes L2 norm of x
+///
+/// args: 
+/// * x: [VecRef] - vector x  
+///
+/// returns: 
+/// * T - norm of x 
+pub fn nrm2<T>( 
+    x: VecRef<'_, T>, 
+) -> T
+where T: SimdElement 
+    + Copy
+    + Default
+    + AddAssign 
+    + Sqrt
+    + Add<Output=T> 
+    + Mul<Output=T>
+    + Fma, 
+
+    Simd<T, LANES>: SimdFloat<Scalar=T>
+    + AddAssign 
+    + Mul<Output=Simd<T, LANES>> 
+    + Add<Output=Simd<T, LANES>> 
+    + Fma, 
+{ 
+    let x_slice = x.as_slice(); 
+
+    let (x_chunks, x_tail) = x_slice.as_chunks::<LANES>();
+
+    let mut accumulator = Simd::<T, LANES>::splat(T::default()); 
+    
+    for &x_chunk in x_chunks.iter() { 
+        let x_vec = Simd::from_array(x_chunk); 
+
+        accumulator = x_vec.fma(x_vec, accumulator); 
+    }   
+
+    let mut sum = T::default(); 
+    for &xt in x_tail.iter() { 
+        sum = xt.fma(xt, sum); 
+    }
+
+    (accumulator.reduce_sum() + sum).sqrt()
+}
