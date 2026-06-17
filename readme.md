@@ -11,6 +11,9 @@ LAK is a small personal linear algebra crate with BLAS-like kernels over
 contiguous Rust slices. Its goal was to see whether a safe, contiguous-only Rust
 library can stay minimal and elegant without sacrificing much performance.
 Benchmarks are available [here](https://devald.dev/notes/linalg-kernels/lak_8.pdf).
+The current blocking constants and chunk sizes are tuned for armv8/Apple
+Silicon. If you test LAK on another architecture and find better parameters,
+tuning contributions are welcome.
 
 The API is organized around BLAS levels:
 
