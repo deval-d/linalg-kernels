@@ -1,5 +1,14 @@
 # LAK
 
+<p align="center">
+<a href="https://crates.io/crates/lak-kernels">
+  <img src="https://img.shields.io/crates/v/lak-kernels.svg?style=flat-square" alt="crates.io">
+</a>
+<a href="https://docs.rs/lak-kernels">
+  <img src="https://docs.rs/lak-kernels/badge.svg?style=flat-square" alt="docs.rs">
+</a>
+</p>
+
 LAK is a small personal linear algebra crate with BLAS-like kernels over
 contiguous Rust slices. Its goal was to see whether a safe, contiguous-only Rust
 library can stay minimal and elegant without sacrificing much performance.
